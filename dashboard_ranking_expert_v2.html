@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — Ranking Expert (Teams)</title>
+
+  <!-- Charts -->
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <!-- CSV parser -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Table -->
+  <link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:rgba(15,23,42,.12);
+      --accent:#2563eb;
+      --panel:rgba(15,23,42,.03);
+    }
+
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+         
+      background: var(--bg);
+      color: var(--text);
+    
+    }
+    header{
+      position:sticky; top:0; z-index:5;
+      backdrop-filter: blur(10px);
+      background: rgba(11,18,32,.7);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{max-width:1250px; margin:0 auto; padding:14px 16px;}
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+    .title{font-size:16px; font-weight:800; display:flex; gap:10px; align-items:center;}
+    .pill{font-size:12px; color:var(--muted); padding:4px 10px; border:1px solid var(--border); border-radius:999px; background:rgba(255,255,255,.03);}
+    .controls{margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    input[type="file"]{
+      color:var(--muted); border:1px dashed var(--border); border-radius:10px;
+      padding:8px 10px; background:rgba(255,255,255,.03);
+    }
+    button{
+      cursor:pointer; border:1px solid var(--border); background:rgba(110,168,254,.14);
+      color:var(--text); padding:9px 12px; border-radius:12px; font-weight:700;
+    }
+    button:hover{background:rgba(110,168,254,.20);}
+    .status{font-size:12px; color:var(--muted);}
+
+    .grid{
+      max-width:1250px; margin:0 auto; padding:16px;
+      display:grid; grid-template-columns:320px 1fr; gap:14px;
+    }
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+    }
+    .panel h3{
+      margin:0 0 10px;
+      font-size:13px; color:var(--muted); font-weight:800;
+      letter-spacing:.3px; text-transform:uppercase;
+    }
+    .filters label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; font-weight:800;}
+    select, input[type="number"], input[type="text"]{
+      width:100%; padding:10px 10px; border-radius:12px;
+      border:1px solid var(--border); background:rgba(0,0,0,.15);
+      color:var(--text); outline:none;
+    }
+    .twoCols{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+    .help{color:var(--muted); font-size:12px; line-height:1.35;}
+
+    .kpis{display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:12px;}
+    .kpi{border:1px solid var(--border); background:rgba(255,255,255,.03); border-radius:16px; padding:12px; min-height:74px;}
+    .kpi .label{color:var(--muted); font-size:12px; font-weight:800;}
+    .kpi .value{margin-top:6px; font-size:26px; font-weight:900;}
+    .kpi .sub{margin-top:2px; color:var(--muted); font-size:12px;}
+    .kpi.good{outline:1px solid rgba(46,204,113,.35);}
+    .kpi.warn{outline:1px solid rgba(241,196,15,.30);}
+    .kpi.bad{outline:1px solid rgba(231,76,60,.30);}
+
+    .charts{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+    .chart{border:1px solid var(--border); background:rgba(255,255,255,.02); border-radius:18px; padding:10px; min-height:340px;}
+    .chartTitle{font-size:12px; color:var(--muted); font-weight:900; letter-spacing:.3px; margin:4px 2px 10px; text-transform:uppercase;}
+
+    .tableWrap{margin-top:14px; border:1px solid var(--border); border-radius:18px; overflow:hidden; background:rgba(255,255,255,.02);}
+    .footerNote{color:var(--muted); font-size:12px; margin-top:10px; line-height:1.35;}
+    .badge{font-weight:900; padding:2px 8px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.03); display:inline-block;}
+
+    /* Tabulator tweaks */
+    .tabulator{background:transparent; border:none; font-size:12px; color:var(--text);}
+    .tabulator .tabulator-header{background:rgba(255,255,255,.02); border-bottom:1px solid var(--border);}
+    .tabulator .tabulator-col{background:transparent; border-right:1px solid var(--border);}
+    .tabulator .tabulator-row{background:rgba(255,255,255,.01); border-bottom:1px solid rgba(255,255,255,.04);}
+    .tabulator .tabulator-row:hover{background:rgba(110,168,254,.10);}
+    .tabulator .tabulator-cell{border-right:1px solid rgba(255,255,255,.04);}
+
+    @media (max-width:1020px){
+      .grid{grid-template-columns:1fr;}
+      .kpis{grid-template-columns:repeat(2, 1fr);}
+      .charts{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <div class="row">
+      <div class="title">
+        <span style="font-size:18px;">📊</span>
+        Dashboard — Ranking Expert (Teams)
+        <span class="pill">cores fixas por rank + donuts</span>
+      </div>
+
+      <div class="controls">
+        <input id="fileInput" type="file" accept=".csv,text/csv" />
+        <button id="btnLoadFile">Importar CSV</button>
+        <button id="btnExportFiltered">Exportar filtrado (CSV)</button>
+        <span id="status" class="status"></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="grid">
+  <!-- Left: filters -->
+  <div class="panel">
+    <h3>Filtros</h3>
+    <div class="filters">
+      <label>Projeto</label>
+      <select id="projectSelect"></select>
+
+      <div class="twoCols">
+        <div>
+          <label>Top K (rank_expert)</label>
+          <select id="topK">
+            <option value="5">Top 5</option>
+            <option value="10">Top 10</option>
+            <option value="9999">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label>MUST OK?</label>
+          <select id="mustOk">
+            <option value="all">Todos</option>
+            <option value="true">Só MUST_OK</option>
+            <option value="false">Só com faltas MUST</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="twoCols">
+        <div>
+          <label>Faltas MUST máx.</label>
+          <input id="maxFaltas" type="number" min="0" step="1" value="999"/>
+        </div>
+        <div>
+          <label>Equipe (para donuts)</label>
+          <select id="teamSelect"></select>
+        </div>
+      </div>
+
+      <label>Buscar equipe/dev</label>
+      <input id="searchText" type="text" placeholder="Ex.: Dev169 ou TEAM3"/>
+
+      <div class="footerNote">
+        <div class="badge">Cores fixas</div>
+        <div style="margin-top:8px;">
+          <b>Rank 1</b> é sempre <span style="color:#f39c12;font-weight:900;">laranja</span>.
+          Rank 2 azul, Rank 3 verde, Rank 4 roxo, Rank 5 vermelho (e assim por diante).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: visuals -->
+  <div>
+    <div class="kpis">
+      <div id="kpiTeams" class="kpi">
+        <div class="label">Equipes (filtradas)</div>
+        <div class="value">—</div>
+        <div class="sub">linhas na tabela</div>
+      </div>
+      <div id="kpiMustOk" class="kpi">
+        <div class="label">MUST_OK %</div>
+        <div class="value">—</div>
+        <div class="sub">entre filtradas</div>
+      </div>
+      <div id="kpiAvgFaltas" class="kpi">
+        <div class="label">Média faltas MUST</div>
+        <div class="value">—</div>
+        <div class="sub">menor é melhor</div>
+      </div>
+      <div id="kpiAvgRank" class="kpi">
+        <div class="label">Rank expert médio</div>
+        <div class="value">—</div>
+        <div class="sub">menor é melhor</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Resumo do projeto</h3>
+      <div id="projectSummary" class="help">—</div>
+    </div>
+
+    <div class="charts" style="margin-top:14px;">
+      <div class="chart">
+        <div class="chartTitle">Tecnologias cobertas (Equipe selecionada)</div>
+        <div id="donutTech" style="width:100%;height:300px;"></div>
+      </div>
+      <div class="chart">
+        <div class="chartTitle">Cobertura por prioridade (M/S/C) — Equipe selecionada</div>
+        <div id="donutMSC" style="width:100%;height:300px;"></div>
+      </div>
+    </div>
+
+    <div class="charts" style="margin-top:14px;">
+      <div class="chart">
+        <div class="chartTitle">Top-K por rank_expert (cores fixas por rank)</div>
+        <div id="barTopK" style="width:100%;height:300px;"></div>
+      </div>
+      <div class="chart">
+        <div class="chartTitle">Cobertura MUST (M) vs Faltas MUST (cores fixas por rank)</div>
+        <div id="scatterCoverage" style="width:100%;height:300px;"></div>
+      </div>
+    </div>
+
+    <div class="tableWrap">
+      <div id="table"></div>
+    </div>
+
+    <div class="footerNote">
+      <b>Importar atualização:</b> selecione um novo CSV no topo e clique em <b>Importar CSV</b>.
+      O dashboard recalcula tudo automaticamente.
+    </div>
+  </div>
+</div>
+
+<script>
+  const EMBEDDED_CSV = "projeto_id,projeto e requisitos,equipe_id,dev1,dev2,dev3,dev4,rank_expert,nota_global,observa\u00e7\u00f5es,team_match_summary,DOM_M,DOM_S,DOM_C,ECO_M,ECO_S,ECO_C,LING_M,LING_S,LING_C,MUST_OK,FALTAS_MUST,TOTAL_FALTAS_MUST,note_dev1,note_dev2,note_dev3,note_dev4\nP1,Manuten\u00e7\u00e3o de Portal Corporativo .NET,P1-TEAM3,Dev169,Dev27,Dev81,Dev363,3,4,,DOM M(1/2)[web] S(0/1)[] C(1/1)[mobile] | ECO M(0/1)[] S(1/1)[react] C(0/1)[] | LING M(0/1)[] S(1/2)[javascript] C(0/1)[],1/2,0/1,1/1,0/1,1/1,0/1,0/1,1/2,0/1,FALSE,DOM faltam 1 | ECO faltam 1 | LING faltam 1,3,\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/1)[react] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n169-27: SEM_COMUM\n169-81: SEM_COMUM\n169-363: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: nan\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n27-81: SEM_COMUM\n27-169: SEM_COMUM\n27-363: P103(,osf=0.739,slf=0.847); P123(,osf=0.393,slf=0.825); P144(,osf=0.541,slf=0.688); P145(,osf=0.612,slf=0.871); P148(,osf=0.411,slf=0.639); P149(,osf=0.325,slf=0.603); P150(,osf=0.475,slf=0.317); P171(,osf=0.486,slf=0.531); P177(,osf=0.340,slf=0.621); P179(,osf=0.489,slf=0.711); P239(,osf=0.422,slf=0.462); P240(,osf=0.385,slf=0.409); P258(,osf=0.666,slf=0.352); P72(,osf=0.639,slf=0.456); P80(,osf=0.559,slf=0.624); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538); P99(,osf=0.757,slf=0.452)\",\"Dom\u00ednio: IoT\nEcossistema: nan\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n81-27: SEM_COMUM\n81-169: SEM_COMUM\n81-363: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[mobile]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n363-27: P103(,osf=0.739,slf=0.847); P123(,osf=0.393,slf=0.825); P144(,osf=0.541,slf=0.688); P145(,osf=0.612,slf=0.871); P148(,osf=0.411,slf=0.639); P149(,osf=0.325,slf=0.603); P150(,osf=0.475,slf=0.317); P171(,osf=0.486,slf=0.531); P177(,osf=0.340,slf=0.621); P179(,osf=0.489,slf=0.711); P239(,osf=0.422,slf=0.462); P240(,osf=0.385,slf=0.409); P258(,osf=0.666,slf=0.352); P72(,osf=0.639,slf=0.456); P80(,osf=0.559,slf=0.624); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538); P99(,osf=0.757,slf=0.452) | 363-447: P123(,osf=0.393,slf=0.825); P144(,osf=0.541,slf=0.688); P145(,osf=0.612,slf=0.871); P148(,osf=0.411,slf=0.639); P149(,osf=0.325,slf=0.603); P150(,osf=0.475,slf=0.317); P171(,osf=0.486,slf=0.531); P177(,osf=0.340,slf=0.621); P179(,osf=0.489,slf=0.711); P214(,osf=0.335,slf=0.820); P239(,osf=0.422,slf=0.462); P240(,osf=0.385,slf=0.409); P258(,osf=0.666,slf=0.352); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538) | 363-544: P123(,osf=0.393,slf=0.825); P144(,osf=0.541,slf=0.688); P145(,osf=0.612,slf=0.871); P148(,osf=0.411,slf=0.639); P149(,osf=0.325,slf=0.603); P150(,osf=0.475,slf=0.317); P171(,osf=0.486,slf=0.531); P177(,osf=0.340,slf=0.621); P179(,osf=0.489,slf=0.711); P239(,osf=0.422,slf=0.462); P240(,osf=0.385,slf=0.409); P258(,osf=0.666,slf=0.352); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n363-81: SEM_COMUM\n363-169: SEM_COMUM\"\n,\"DOM  M[Desktop, Web] S[Cloud] C[Mobile]\nECO  M[.NET] S[React] C[MongoDB]\nLING M[C#] S[JavaScript, TypeScript] C[Python]\",,Dev71,Dev518,Dev509,Dev439,4,5,,\"DOM M(1/2)[web] S(0/1)[] C(0/1)[] | ECO M(0/1)[] S(1/1)[react] C(0/1)[] | LING M(0/1)[] S(2/2)[javascript, typescript] C(1/1)[python]\",1/2,0/1,0/1,0/1,1/1,0/1,0/1,2/2,1/1,FALSE,DOM faltam 1 | ECO faltam 1 | LING faltam 1,3,,,,\n,,,Dev205,Dev526,Dev363,Dev447,4,5,,DOM M(1/2)[web] S(0/1)[] C(1/1)[mobile] | ECO M(0/1)[] S(1/1)[react] C(0/1)[] | LING M(0/1)[] S(1/2)[javascript] C(0/1)[],1/2,0/1,1/1,0/1,1/1,0/1,0/1,1/2,0/1,FALSE,DOM faltam 1 | ECO faltam 1 | LING faltam 1,3,\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[mobile]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n205-363: SEM_COMUM\n205-447: SEM_COMUM\n205-526: P139(,osf=0.325,slf=0.436)\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/1)[react] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n526-205: P139(,osf=0.325,slf=0.436)\n526-363: SEM_COMUM\n526-447: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[mobile]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n363-205: SEM_COMUM\n363-447: SEM_COMUM\n363-526: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[mobile]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n447-205: SEM_COMUM\n447-363: P123(,osf=0.393,slf=0.825); P144(,osf=0.541,slf=0.688); P145(,osf=0.612,slf=0.871); P148(,osf=0.411,slf=0.639); P149(,osf=0.325,slf=0.603); P150(,osf=0.475,slf=0.317); P171(,osf=0.486,slf=0.531); P177(,osf=0.340,slf=0.621); P179(,osf=0.489,slf=0.711); P214(,osf=0.335,slf=0.820); P239(,osf=0.422,slf=0.462); P240(,osf=0.385,slf=0.409); P258(,osf=0.666,slf=0.352); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n447-526: SEM_COMUM\"\n,,,Dev33,Dev303,Dev270,Dev93,2,3,,\"DOM M(2/2)[desktop, web] S(0/1)[] C(0/1)[] | ECO M(1/1)[.net] S(0/1)[] C(0/1)[] | LING M(1/1)[c#] S(2/2)[javascript, typescript] C(0/1)[]\",2/2,0/1,0/1,1/1,0/1,0/1,1/1,2/2,0/1,TRUE,OK,0,\"Dom\u00ednio: nan\nEcossistema: Android, CouchDB, iOS/iPadOS\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n33-93: SEM_COMUM\n33-270: SEM_COMUM\n33-303: SEM_COMUM\",\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[desktop] S (0/1)[] C (0/1)[]\nECO: M (1/1)[.net] S (0/1)[] C (0/1)[]\nLING: M (1/1)[c#] S (0/2)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n303-33: SEM_COMUM\n303-93: SEM_COMUM\n303-270: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Angular\nLinguagens: TypeScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (1/2)[typescript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n270-33: SEM_COMUM\n270-93: P82(,osf=0.567,slf=0.737) | 270-411: P82(,osf=0.567,slf=0.737) | 270-438: P82(,osf=0.567,slf=0.737)\n270-303: SEM_COMUM\",\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[desktop] S (0/1)[] C (0/1)[]\nECO: M (1/1)[.net] S (0/1)[] C (0/1)[]\nLING: M (1/1)[c#] S (0/2)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n93-33: SEM_COMUM\n93-270: P82(,osf=0.567,slf=0.737) | 93-292: P82(,osf=0.567,slf=0.737) | 93-437: P158(,osf=0.670,slf=0.322); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n93-303: SEM_COMUM\"\n,,,Dev316,Dev389,Dev526,Dev308,2,3,,DOM M(1/2)[web] S(0/1)[] C(1/1)[mobile] | ECO M(0/1)[] S(1/1)[react] C(0/1)[] | LING M(0/1)[] S(1/2)[javascript] C(0/1)[],1/2,0/1,1/1,0/1,1/1,0/1,0/1,1/2,0/1,FALSE,DOM faltam 1 | ECO faltam 1 | LING faltam 1,3,\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n316-308: SEM_COMUM\n316-389: SEM_COMUM\n316-526: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[mobile]\nECO: M (0/1)[] S (0/1)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n389-308: SEM_COMUM\n389-316: SEM_COMUM\n389-526: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/1)[react] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n526-308: SEM_COMUM\n526-316: SEM_COMUM\n526-389: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/1)[react] C (0/1)[]\nLING: M (0/1)[] S (1/2)[javascript] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n308-316: SEM_COMUM\n308-389: SEM_COMUM\n308-526: SEM_COMUM\"\n,,,,,,,,,,,,,,,,,,,,,,,,,,\nP2,App Mobile H\u00edbrido com Painel Web,P2-TEAM1,Dev466,Dev93,Dev437,Dev292,1,1,,DOM M(1/1)[mobile] S(1/1)[web] C(0/1)[] | ECO M(1/2)[ios/ipados] S(0/1)[] C(1/1)[.net] | LING M(1/2)[swift] S(1/2)[javascript] C(1/2)[c#],1/1,1/1,0/1,1/2,0/1,1/1,1/2,1/2,1/2,FALSE,ECO faltam 1 | LING faltam 1,2,\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (1/1)[.net]\nLING: M (0/2)[] S (0/2)[] C (1/2)[c#]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n466-93: SEM_COMUM\n466-292: SEM_COMUM\n466-437: SEM_COMUM\",\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (1/1)[.net]\nLING: M (0/2)[] S (0/2)[] C (1/2)[c#]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n93-292: SEM_COMUM\n93-437: SEM_COMUM\n93-466: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[mobile] S (0/1)[] C (0/1)[]\nECO: M (1/2)[ios/ipados] S (0/1)[] C (0/1)[]\nLING: M (1/2)[swift] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n437-93: P158(,osf=0.670,slf=0.322); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538) | 437-292: P82(,osf=0.567,slf=0.737)\n437-292: SEM_COMUM\n437-466: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (1/2)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n292-93: P82(,osf=0.567,slf=0.737) | 292-437: P82(,osf=0.567,slf=0.737)\n292-437: SEM_COMUM\n292-466: SEM_COMUM\"\n,\"DOM  M[Mobile] S[Web] C[Cloud]\nECO  M[Android, iOS/iPadOS] S[React] C[.NET]\nLING M[Kotlin, Swift] S[JavaScript, TypeScript] C[Java, C#]\",,Dev270,Dev411,Dev479,Dev503,2,1,,\"DOM M(0/1)[] S(1/1)[web] C(0/1)[] | ECO M(0/2)[] S(1/1)[react] C(0/1)[] | LING M(0/2)[] S(2/2)[javascript, typescript] C(1/2)[java]\",0/1,1/1,0/1,0/2,1/1,0/1,0/2,2/2,1/2,FALSE,DOM faltam 1 | ECO faltam 2 | LING faltam 2,5,\"Dom\u00ednio: Web\nEcossistema: Angular\nLinguagens: TypeScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (1/2)[typescript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n270-411: SEM_COMUM\n270-479: SEM_COMUM\n270-503: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Spring Boot\nLinguagens: Java\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (0/2)[] C (1/2)[java]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n411-270: P82(,osf=0.567,slf=0.737) | 411-479: P179(,osf=0.489,slf=0.711) | 411-503: P145(,osf=0.612,slf=0.871); P177(,osf=0.340,slf=0.621); P284(,osf=0.383,slf=0.553)\n411-479: SEM_COMUM\n411-503: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Angular\nLinguagens: TypeScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (1/2)[typescript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n479-270: SEM_COMUM\n479-411: P179(,osf=0.489,slf=0.711)\n479-503: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (1/1)[react] C (0/1)[]\nLING: M (0/2)[] S (1/2)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n503-270: SEM_COMUM\n503-411: SEM_COMUM\n503-479: SEM_COMUM\"\n,,,Dev115,Dev119,Dev399,Dev193,3,2,,\"DOM M(1/1)[mobile] S(1/1)[web] C(0/1)[] | ECO M(1/2)[ios/ipados] S(0/1)[] C(1/1)[.net] | LING M(1/2)[swift] S(1/2)[javascript] C(2/2)[java, c#]\",1/1,1/1,0/1,1/2,0/1,1/1,1/2,1/2,2/2,FALSE,ECO faltam 1 | LING faltam 1,2,\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (1/2)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n115-119: SEM_COMUM\n115-193: SEM_COMUM\n115-399: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[mobile] S (0/1)[] C (0/1)[]\nECO: M (1/2)[ios/ipados] S (0/1)[] C (0/1)[]\nLING: M (1/2)[swift] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n119-115: SEM_COMUM\n119-193: P82(,osf=0.567,slf=0.737) | 119-399: P82(,osf=0.567,slf=0.737)\n119-399: SEM_COMUM\",\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (1/1)[.net]\nLING: M (0/2)[] S (0/2)[] C (1/2)[c#]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n399-115: SEM_COMUM\n399-119: P82(,osf=0.567,slf=0.737) | 399-193: P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n399-193: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Spring Boot\nLinguagens: Java\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (0/2)[] C (1/2)[java]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n193-115: SEM_COMUM\n193-119: SEM_COMUM\n193-399: SEM_COMUM\"\n,,,Dev468,Dev263,Dev503,Dev5,4,4,,DOM M(1/1)[mobile] S(1/1)[web] C(1/1)[cloud] | ECO M(1/2)[android] S(1/1)[react] C(0/1)[] | LING M(1/2)[kotlin] S(1/2)[javascript] C(0/2)[],1/1,1/1,1/1,1/2,1/1,0/1,1/2,1/2,0/2,FALSE,ECO faltam 1 | LING faltam 1,2,\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (1/1)[cloud]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n468-5: P82(,osf=0.567,slf=0.737) | 468-508: P196(,osf=0.888,slf=0.339) | 468-516: P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n468-263: SEM_COMUM\n468-503: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Vue\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (1/2)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n263-5: P179(,osf=0.489,slf=0.711) | 263-145: P179(,osf=0.489,slf=0.711); P201(,osf=0.535,slf=0.596)\n263-468: SEM_COMUM\n263-503: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[web] C (0/1)[]\nECO: M (0/2)[] S (1/1)[react] C (0/1)[]\nLING: M (0/2)[] S (1/2)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n503-5: P145(,osf=0.612,slf=0.871); P177(,osf=0.340,slf=0.621); P213(,osf=0.312,slf=0.608); P216(,osf=0.401,slf=0.341); P279(,osf=0.594,slf=0.422) | 503-411: P145(,osf=0.612,slf=0.871); P177(,osf=0.340,slf=0.621); P284(,osf=0.383,slf=0.553)\n503-263: SEM_COMUM\n503-468: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[mobile] S (0/1)[] C (0/1)[]\nECO: M (1/2)[android] S (0/1)[] C (0/1)[]\nLING: M (1/2)[kotlin] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n5-263: P179(,osf=0.489,slf=0.711) | 5-468: P82(,osf=0.567,slf=0.737) | 5-503: P145(,osf=0.612,slf=0.871); P177(,osf=0.340,slf=0.621); P213(,osf=0.312,slf=0.608); P216(,osf=0.401,slf=0.341); P279(,osf=0.594,slf=0.422)\n5-468: SEM_COMUM\n5-503: SEM_COMUM\"\n,,,Dev104,Dev363,Dev544,Dev81,3,4,,\"DOM M(1/1)[mobile] S(0/1)[] C(0/1)[] | ECO M(2/2)[android, ios/ipados] S(0/1)[] C(0/1)[] | LING M(2/2)[kotlin, swift] S(1/2)[javascript] C(0/2)[]\",1/1,0/1,0/1,2/2,0/1,0/1,2/2,1/2,0/2,TRUE,OK,0,\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[mobile] S (0/1)[] C (0/1)[]\nECO: M (1/2)[android] S (0/1)[] C (0/1)[]\nLING: M (1/2)[kotlin] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n104-81: P69(,osf=0.478,slf=0.301)\n104-363: SEM_COMUM\n104-544: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[mobile] S (0/1)[] C (0/1)[]\nECO: M (1/2)[ios/ipados] S (0/1)[] C (0/1)[]\nLING: M (1/2)[swift] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n363-81: SEM_COMUM\n363-104: SEM_COMUM\n363-544: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[mobile] S (0/1)[] C (0/1)[]\nECO: M (1/2)[ios/ipados] S (0/1)[] C (0/1)[]\nLING: M (1/2)[swift] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n544-81: SEM_COMUM\n544-104: SEM_COMUM\n544-363: SEM_COMUM\",\"Dom\u00ednio: IoT\nEcossistema: nan\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/2)[] S (0/1)[] C (0/1)[]\nLING: M (0/2)[] S (1/2)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n81-104: P69(,osf=0.478,slf=0.301)\n81-363: SEM_COMUM\n81-544: SEM_COMUM\"\n,,,,,,,,,,,,,,,,,,,,,,,,,,\nP3,Plataforma IoT de Sensoriamento em Nuvem,P3-TEAM3,Dev423,Dev558,Dev494,Dev391,3,2,,DOM M(1/2)[cloud] S(1/1)[web] C(0/1)[] | ECO M(1/1)[aws lambda] S(1/3)[react] C(1/1)[android] | LING M(1/2)[python] S(1/1)[javascript] C(0/2)[],1/2,1/1,0/1,1/1,1/3,1/1,1/2,1/1,0/2,FALSE,DOM faltam 1 | LING faltam 1,2,\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (1/3)[react] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n423-391: SEM_COMUM\n423-494: SEM_COMUM\n423-558: P85(,osf=0.784,slf=0.538)\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (1/1)[android]\nLING: M (0/2)[] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n558-391: SEM_COMUM\n558-423: SEM_COMUM\n558-494: SEM_COMUM\",\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[cloud] S (0/1)[] C (0/1)[]\nECO: M (1/1)[aws lambda] S (0/3)[] C (0/1)[]\nLING: M (1/2)[python] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n494-391: SEM_COMUM\n494-423: SEM_COMUM\n494-558: SEM_COMUM\",\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[cloud] S (0/1)[] C (0/1)[]\nECO: M (1/1)[aws lambda] S (0/3)[] C (0/1)[]\nLING: M (1/2)[python] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n391-423: SEM_COMUM\n391-494: SEM_COMUM\n391-558: SEM_COMUM\"\n,\"DOM  M[IoT, Cloud] S[Web] C[Desktop]\nECO  M[AWS Lambda] S[React, Angular, MongoDB] C[Android]\nLING M[Python, C++] S[JavaScript] C[Java, TypeScript]\",,Dev104,Dev446,Dev152,Dev465,5,4,,DOM M(0/2)[] S(1/1)[web] C(0/1)[] | ECO M(0/1)[] S(1/3)[react] C(1/1)[android] | LING M(0/2)[] S(1/1)[javascript] C(1/2)[java],0/2,1/1,0/1,0/1,1/3,1/1,0/2,1/1,1/2,FALSE,DOM faltam 2 | ECO faltam 1 | LING faltam 2,5,\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (1/1)[android]\nLING: M (0/2)[] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n104-152: SEM_COMUM\n104-446: SEM_COMUM\n104-465: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (1/1)[android]\nLING: M (0/2)[] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n446-104: SEM_COMUM\n446-152: SEM_COMUM\n446-465: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (1/3)[react] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n152-104: SEM_COMUM\n152-446: SEM_COMUM\n152-465: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Spring Boot\nLinguagens: Java\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (0/1)[] C (1/2)[java]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n465-104: SEM_COMUM\n465-152: SEM_COMUM\n465-446: SEM_COMUM\"\n,,,Dev362,Dev242,Dev450,Dev161,4,4,,DOM M(0/2)[] S(1/1)[web] C(1/1)[desktop] | ECO M(0/1)[] S(1/3)[react] C(0/1)[] | LING M(0/2)[] S(1/1)[javascript] C(0/2)[],0/2,1/1,1/1,0/1,1/3,0/1,0/2,1/1,0/2,FALSE,DOM faltam 2 | ECO faltam 1 | LING faltam 2,5,\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (1/3)[react] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n362-161: SEM_COMUM\n362-242: SEM_COMUM\n362-450: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n242-161: SEM_COMUM\n242-362: SEM_COMUM\n242-450: SEM_COMUM\",\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[desktop]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n450-161: SEM_COMUM\n450-242: SEM_COMUM\n450-362: SEM_COMUM\",\"Dom\u00ednio: nan\nEcossistema: nan\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n161-242: SEM_COMUM\n161-362: SEM_COMUM\n161-450: SEM_COMUM\"\n,,,Dev362,Dev354,Dev495,Dev458,3,3,,DOM M(0/2)[] S(1/1)[web] C(0/1)[] | ECO M(0/1)[] S(1/3)[react] C(0/1)[] | LING M(0/2)[] S(1/1)[javascript] C(1/2)[java],0/2,1/1,0/1,0/1,1/3,0/1,0/2,1/1,1/2,FALSE,DOM faltam 2 | ECO faltam 1 | LING faltam 2,5,\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (1/3)[react] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n362-354: SEM_COMUM\n362-458: SEM_COMUM\n362-495: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n354-362: SEM_COMUM\n354-458: SEM_COMUM\n354-495: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Spring Boot\nLinguagens: Java\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (0/1)[] C (1/2)[java]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n495-354: SEM_COMUM\n495-362: SEM_COMUM\n495-458: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n458-354: SEM_COMUM\n458-362: SEM_COMUM\n458-495: SEM_COMUM\"\n,,,Dev439,Dev16,Dev209,Dev463,5,5,,DOM M(0/2)[] S(1/1)[web] C(0/1)[] | ECO M(0/1)[] S(1/3)[react] C(0/1)[] | LING M(0/2)[] S(1/1)[javascript] C(0/2)[],0/2,1/1,0/1,0/1,1/3,0/1,0/2,1/1,0/2,FALSE,DOM faltam 2 | ECO faltam 1 | LING faltam 2,5,\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (1/3)[react] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n439-16: SEM_COMUM\n439-209: SEM_COMUM\n439-463: SEM_COMUM\",\"Dom\u00ednio: nan\nEcossistema: iOS/iPadOS\nLinguagens: nan\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (0/1)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n16-209: SEM_COMUM\n16-439: SEM_COMUM\n16-463: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n209-16: SEM_COMUM\n209-439: SEM_COMUM\n209-463: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Vue\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[web] C (0/1)[]\nECO: M (0/1)[] S (0/3)[] C (0/1)[]\nLING: M (0/2)[] S (1/1)[javascript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n463-16: SEM_COMUM\n463-209: SEM_COMUM\n463-439: SEM_COMUM\"\n,,,,,,,,,,,,,,,,,,,,,,,,,,\nP4,SaaS Web de Relat\u00f3rios Anal\u00edticos,P4-TEAM2,Dev263,Dev241,Dev303,Dev548,2,2,,DOM M(1/1)[web] S(0/1)[] C(1/1)[desktop] | ECO M(0/1)[] S(0/2)[] C(0/1)[] | LING M(1/1)[javascript] S(0/2)[] C(1/2)[c#],1/1,0/1,1/1,0/1,0/2,0/1,1/1,0/2,1/2,FALSE,ECO faltam 1,1,\"Dom\u00ednio: Web\nEcossistema: Vue\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n263-241: SEM_COMUM\n263-303: SEM_COMUM\n263-548: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n241-263: SEM_COMUM\n241-303: SEM_COMUM\n241-548: SEM_COMUM\",\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (1/1)[desktop]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (1/2)[c#]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n303-241: SEM_COMUM\n303-263: SEM_COMUM\n303-548: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n548-241: SEM_COMUM\n548-263: SEM_COMUM\n548-303: SEM_COMUM\"\n,\"DOM  M[Web] S[Cloud] C[Desktop]\nECO  M[MongoDB] S[Angular, React] C[AWS Lambda]\nLING M[JavaScript] S[TypeScript, Python] C[Java, C#]\",,Dev145,Dev38,Dev225,Dev263,3,3,,DOM M(1/1)[web] S(0/1)[] C(0/1)[] | ECO M(0/1)[] S(1/2)[react] C(0/1)[] | LING M(1/1)[javascript] S(0/2)[] C(0/2)[],1/1,0/1,0/1,0/1,1/2,0/1,1/1,0/2,0/2,FALSE,ECO faltam 1,1,\"Dom\u00ednio: IoT, Web\nEcossistema: iOS/iPadOS\nLinguagens: JSON, JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n145-38: SEM_COMUM\n145-225: SEM_COMUM\n145-263: P179(,osf=0.489,slf=0.711); P201(,osf=0.535,slf=0.596)\",\"Dom\u00ednio: Web\nEcossistema: iOS/iPadOS\nLinguagens: nan\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n38-145: SEM_COMUM\n38-225: P82(,osf=0.567,slf=0.737)\n38-263: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/2)[react] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n225-38: P82(,osf=0.567,slf=0.737)\n225-145: SEM_COMUM\n225-263: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Vue\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n263-38: SEM_COMUM\n263-145: SEM_COMUM\n263-225: SEM_COMUM\"\n,,,Dev193,Dev194,Dev7,Dev154,1,1,,DOM M(1/1)[web] S(1/1)[cloud] C(0/1)[] | ECO M(0/1)[] S(1/2)[react] C(1/1)[aws lambda] | LING M(1/1)[javascript] S(1/2)[python] C(1/2)[java],1/1,1/1,0/1,0/1,1/2,1/1,1/1,1/2,1/2,FALSE,ECO faltam 1,1,\"Dom\u00ednio: Web\nEcossistema: Spring Boot\nLinguagens: Java\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (1/2)[java]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n193-7: P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538) | 193-119: P82(,osf=0.567,slf=0.737) | 193-194: P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538) | 193-399: P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n193-154: SEM_COMUM\n193-194: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n194-7: P40(,osf=0.733,slf=0.373); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538) | 194-193: P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n194-154: SEM_COMUM\n194-193: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/2)[react] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n7-154: SEM_COMUM\n7-193: P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538) | 7-194: P40(,osf=0.733,slf=0.373); P82(,osf=0.567,slf=0.737); P85(,osf=0.784,slf=0.538)\n7-194: SEM_COMUM\",\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[cloud] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (1/1)[aws lambda]\nLING: M (0/1)[] S (1/2)[python] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n154-7: SEM_COMUM\n154-193: SEM_COMUM\n154-194: SEM_COMUM\"\n,,,Dev438,Dev270,Dev104,Dev293,3,4,,\"DOM M(1/1)[web] S(1/1)[cloud] C(0/1)[] | ECO M(0/1)[] S(1/2)[angular] C(1/1)[aws lambda] | LING M(0/1)[] S(2/2)[typescript, python] C(0/2)[]\",1/1,1/1,0/1,0/1,1/2,1/1,0/1,2/2,0/2,FALSE,ECO faltam 1 | LING faltam 1,2,\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (1/1)[cloud] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (1/1)[aws lambda]\nLING: M (0/1)[] S (1/2)[python] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n438-104: SEM_COMUM\n438-270: P82(,osf=0.567,slf=0.737) | 438-293: P124(,osf=0.678,slf=0.507); P152(,osf=0.337,slf=0.880) | 438-558: P85(,osf=0.784,slf=0.538)\n438-293: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Angular\nLinguagens: TypeScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/2)[angular] C (0/1)[]\nLING: M (0/1)[] S (1/2)[typescript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n270-104: SEM_COMUM\n270-293: SEM_COMUM\n270-438: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n104-270: SEM_COMUM\n104-293: SEM_COMUM\n104-438: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Angular\nLinguagens: TypeScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (1/2)[angular] C (0/1)[]\nLING: M (0/1)[] S (1/2)[typescript] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n293-104: SEM_COMUM\n293-270: SEM_COMUM\n293-438: P124(,osf=0.678,slf=0.507); P152(,osf=0.337,slf=0.880)\"\n,,,Dev198,Dev415,Dev62,Dev559,4,5,,DOM M(1/1)[web] S(0/1)[] C(0/1)[] | ECO M(1/1)[mongodb] S(0/2)[] C(0/1)[] | LING M(1/1)[javascript] S(0/2)[] C(0/2)[],1/1,0/1,0/1,1/1,0/2,0/1,1/1,0/2,0/2,TRUE,OK,0,\"Dom\u00ednio: Web\nEcossistema: Vue\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n198-62: SEM_COMUM\n198-415: P82(,osf=0.567,slf=0.737)\n198-559: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Vue\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/1)[web] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (1/1)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n415-62: P85(,osf=0.784,slf=0.538) | 415-198: P82(,osf=0.567,slf=0.737)\n415-198: SEM_COMUM\n415-559: SEM_COMUM\",\"Dom\u00ednio: nan\nEcossistema: MongoDB, iOS/iPadOS\nLinguagens: nan\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (1/1)[mongodb] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n62-198: SEM_COMUM\n62-415: P85(,osf=0.784,slf=0.538)\n62-559: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/1)[] S (0/1)[] C (0/1)[]\nECO: M (0/1)[] S (0/2)[] C (0/1)[]\nLING: M (0/1)[] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n559-62: SEM_COMUM\n559-198: SEM_COMUM\n559-415: SEM_COMUM\"\n,,,,,,,,,,,,,,,,,,,,,,,,,,\nP5,Plataforma Cr\u00edtica Web+Cloud,P5-TEAM5,Dev174,Dev265,Dev524,Dev169,5,,,\"DOM M(1/2)[web] S(0/1)[] C(1/1)[desktop] | ECO M(1/3)[react] S(1/1)[.net] C(0/1)[] | LING M(1/3)[javascript] S(2/2)[c#, java] C(0/2)[]\",1/2,0/1,1/1,1/3,1/1,0/1,1/3,2/2,0/2,FALSE,DOM faltam 1 | ECO faltam 2 | LING faltam 2,5,\"Dom\u00ednio: Web\nEcossistema: Vue\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (1/3)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n174-169: SEM_COMUM\n174-265: SEM_COMUM\n174-524: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Spring Boot\nLinguagens: Java\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (0/3)[] S (1/2)[java] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n265-169: SEM_COMUM\n265-174: SEM_COMUM\n265-524: SEM_COMUM\",\"Dom\u00ednio: Desktop\nEcossistema: .NET\nLinguagens: C#\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[desktop]\nECO: M (0/3)[] S (1/1)[.net] C (0/1)[]\nLING: M (0/3)[] S (1/2)[c#] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n524-169: SEM_COMUM\n524-174: SEM_COMUM\n524-265: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (1/3)[react] S (0/1)[] C (0/1)[]\nLING: M (1/3)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n169-174: SEM_COMUM\n169-265: SEM_COMUM\n169-524: SEM_COMUM\"\n,\"DOM  M[Web, Cloud] S[Mobile] C[Desktop]\nECO  M[React, AWS Lambda, MongoDB] S[.NET] C[Android]\nLING M[JavaScript, TypeScript, Python] S[C#, Java] C[Kotlin, Swift]\",,Dev438,Dev558,Dev461,Dev297,2,,,\"DOM M(2/2)[web, cloud] S(1/1)[mobile] C(0/1)[] | ECO M(2/3)[react, aws lambda] S(0/1)[] C(1/1)[android] | LING M(2/3)[javascript, python] S(0/2)[] C(1/2)[kotlin]\",2/2,1/1,0/1,2/3,0/1,1/1,2/3,0/2,1/2,FALSE,ECO faltam 1 | LING faltam 1,2,\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[cloud] S (0/1)[] C (0/1)[]\nECO: M (1/3)[aws lambda] S (0/1)[] C (0/1)[]\nLING: M (1/3)[python] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n438-297: SEM_COMUM\n438-461: SEM_COMUM\n438-558: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[mobile] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (1/1)[android]\nLING: M (0/3)[] S (0/2)[] C (1/2)[kotlin]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n558-297: SEM_COMUM\n558-438: P85(,osf=0.784,slf=0.538) | 558-461: P183(,osf=0.476,slf=0.842); P184(,osf=0.615,slf=0.450); P188(,osf=0.655,slf=0.631); P219(,osf=0.351,slf=0.534); P269(,osf=0.400,slf=0.408); P274(,osf=0.411,slf=0.591)\n558-461: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (1/3)[react] S (0/1)[] C (0/1)[]\nLING: M (1/3)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n461-297: SEM_COMUM\n461-438: SEM_COMUM\n461-558: P183(,osf=0.476,slf=0.842); P184(,osf=0.615,slf=0.450); P188(,osf=0.655,slf=0.631); P219(,osf=0.351,slf=0.534); P269(,osf=0.400,slf=0.408); P274(,osf=0.411,slf=0.591)\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (1/3)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n297-438: SEM_COMUM\n297-461: SEM_COMUM\n297-558: SEM_COMUM\"\n,,,Dev324,Dev439,Dev370,Dev250,3,,,\"DOM M(2/2)[web, cloud] S(1/1)[mobile] C(0/1)[] | ECO M(2/3)[react, aws lambda] S(0/1)[] C(1/1)[android] | LING M(2/3)[javascript, python] S(0/2)[] C(2/2)[kotlin, swift]\",2/2,1/1,0/1,2/3,0/1,1/1,2/3,0/2,2/2,FALSE,ECO faltam 1 | LING faltam 1,2,\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[mobile] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (1/1)[android]\nLING: M (0/3)[] S (0/2)[] C (1/2)[kotlin]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n324-250: SEM_COMUM\n324-370: SEM_COMUM\n324-439: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: React\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (1/3)[react] S (0/1)[] C (0/1)[]\nLING: M (1/3)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n439-250: SEM_COMUM\n439-324: SEM_COMUM\n439-370: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[mobile] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (0/3)[] S (0/2)[] C (1/2)[swift]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n370-250: SEM_COMUM\n370-324: SEM_COMUM\n370-439: SEM_COMUM\",\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[cloud] S (0/1)[] C (0/1)[]\nECO: M (1/3)[aws lambda] S (0/1)[] C (0/1)[]\nLING: M (1/3)[python] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n250-324: SEM_COMUM\n250-370: SEM_COMUM\n250-439: SEM_COMUM\"\n,,,Dev331,Dev36,Dev181,Dev494,2,,,\"DOM M(1/2)[cloud] S(1/1)[mobile] C(0/1)[] | ECO M(1/3)[aws lambda] S(0/1)[] C(1/1)[android] | LING M(1/3)[python] S(0/2)[] C(2/2)[kotlin, swift]\",1/2,1/1,0/1,1/3,0/1,1/1,1/3,0/2,2/2,FALSE,DOM faltam 1 | ECO faltam 2 | LING faltam 2,5,\"Dom\u00ednio: Mobile\nEcossistema: iOS/iPadOS\nLinguagens: Swift\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[mobile] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (0/3)[] S (0/2)[] C (1/2)[swift]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n331-36: SEM_COMUM\n331-181: SEM_COMUM\n331-494: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[mobile] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (1/1)[android]\nLING: M (0/3)[] S (0/2)[] C (1/2)[kotlin]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n36-181: P82(,osf=0.567,slf=0.737)\n36-331: SEM_COMUM\n36-494: SEM_COMUM\",\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[cloud] S (0/1)[] C (0/1)[]\nECO: M (1/3)[aws lambda] S (0/1)[] C (0/1)[]\nLING: M (1/3)[python] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n181-36: P82(,osf=0.567,slf=0.737)\n181-331: SEM_COMUM\n181-494: SEM_COMUM\",\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[cloud] S (0/1)[] C (0/1)[]\nECO: M (1/3)[aws lambda] S (0/1)[] C (0/1)[]\nLING: M (1/3)[python] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n494-36: SEM_COMUM\n494-181: SEM_COMUM\n494-331: SEM_COMUM\"\n,,,Dev479,Dev389,Dev357,Dev316,4,,,\"DOM M(1/2)[web] S(1/1)[mobile] C(0/1)[] | ECO M(0/3)[] S(0/1)[] C(1/1)[android] | LING M(2/3)[javascript, typescript] S(0/2)[] C(1/2)[kotlin]\",1/2,1/1,0/1,0/3,0/1,1/1,2/3,0/2,1/2,FALSE,DOM faltam 1 | ECO faltam 3 | LING faltam 1,5,\"Dom\u00ednio: Web\nEcossistema: Angular\nLinguagens: TypeScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (1/3)[typescript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n479-316: SEM_COMUM\n479-357: SEM_COMUM\n479-389: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[mobile] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (1/1)[android]\nLING: M (0/3)[] S (0/2)[] C (1/2)[kotlin]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n389-316: SEM_COMUM\n389-357: SEM_COMUM\n389-479: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (1/3)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n357-316: SEM_COMUM\n357-389: SEM_COMUM\n357-479: SEM_COMUM\",\"Dom\u00ednio: Web\nEcossistema: Node.js\nLinguagens: JavaScript\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[web] S (0/1)[] C (0/1)[]\nECO: M (0/3)[] S (0/1)[] C (0/1)[]\nLING: M (1/3)[javascript] S (0/2)[] C (0/2)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n316-357: SEM_COMUM\n316-389: SEM_COMUM\n316-479: SEM_COMUM\"\n,,,,,,,,,,,,,,,,,,,,,,,,,,\nP6,Plataforma Cr\u00edtica de Hardware Embarcado,P6-TEAM2,Dev65,Dev71,Dev63,Dev261,2,1,,\"DOM M(2/2)[hardware, embedded] S(1/1)[iot] C(1/1)[cloud] | ECO M(2/2)[pcb, desenvolvimento de placa] S(1/1)[eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)] C(2/2)[instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico), prototipa\u00e7\u00e3o] | LING M(1/1)[c] S(1/1)[c++] C(1/1)[python]\",2/2,1/1,1/1,2/2,1/1,2/2,1/1,1/1,1/1,TRUE,OK,0,\"Dom\u00ednio: IoT, Web, Embedded\nEcossistema: iOS/iPadOS, PCB, Prototipa\u00e7\u00e3o\nLinguagens: C++, Java, C\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[embedded] S (1/1)[iot] C (0/1)[]\nECO: M (1/2)[pcb] S (0/1)[] C (1/2)[prototipa\u00e7\u00e3o]\nLING: M (1/1)[c] S (1/1)[c++] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n65-71: SEM_COMUM\n65-63: SEM_COMUM\n65-261: P11(osf=0.460,slf=0.781); P76(osf=0.821,slf=0.637); P118(osf=0.593,slf=0.504)\",\"Dom\u00ednio: IoT, Web, Hardware\nEcossistema: iOS/iPadOS, Desenvolvimento de Placa\nLinguagens: HTML, JavaScript, Python, C\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[hardware] S (1/1)[iot] C (0/1)[]\nECO: M (1/2)[desenvolvimento de placa] S (0/1)[] C (0/2)[]\nLING: M (1/1)[c] S (0/1)[] C (1/1)[python]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n71-63: SEM_COMUM\n71-65: SEM_COMUM\n71-261: SEM_COMUM\",\"Dom\u00ednio: IoT\nEcossistema: Eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)\nLinguagens: Lua, Java\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[iot] C (0/1)[]\nECO: M (0/2)[] S (1/1)[eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)] C (0/2)[]\nLING: M (0/1)[] S (0/1)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n63-71: SEM_COMUM\n63-65: SEM_COMUM\n63-261: SEM_COMUM\",\"Dom\u00ednio: Cloud\nEcossistema: AWS Lambda, Instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico)\nLinguagens: Python\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[cloud]\nECO: M (0/2)[] S (0/1)[] C (1/2)[instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico)]\nLING: M (0/1)[] S (0/1)[] C (1/1)[python]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n261-71: SEM_COMUM\n261-63: SEM_COMUM\n261-65: P76(osf=0.821,slf=0.637); P11(osf=0.460,slf=0.781); P118(osf=0.593,slf=0.504)\"\n,\"DOM M[Hardware, Embedded] S[IoT] C[Cloud]\nECO M[PCB, Desenvolvimento de Placa] S[Eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)] C[Instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico), Prototipa\u00e7\u00e3o]\nLING M[C] S[C++] C[Python]\",,Dev508,Dev193,Dev36,Dev335,1,1,,\"DOM M(2/2)[hardware, embedded] S(1/1)[iot] C(1/1)[cloud] | ECO M(2/2)[pcb, desenvolvimento de placa] S(1/1)[eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)] C(2/2)[instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico), prototipa\u00e7\u00e3o] | LING M(1/1)[c] S(1/1)[c++] C(1/1)[python]\",2/2,1/1,1/1,2/2,1/1,2/2,1/1,1/1,1/1,TRUE,OK,0,\"Dom\u00ednio: Web, Embedded\nEcossistema: React, PCB\nLinguagens: JavaScript, C\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[embedded] S (0/1)[] C (0/1)[]\nECO: M (1/2)[pcb] S (0/1)[] C (0/2)[]\nLING: M (1/1)[c] S (0/1)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n508-36: SEM_COMUM\n508-193: SEM_COMUM\n508-335: SEM_COMUM\",\"Dom\u00ednio: Web, Hardware\nEcossistema: Spring Boot, Desenvolvimento de Placa\nLinguagens: Java, C++, Python\n\nMatch (requisitos do projeto):\nDOM: M (1/2)[hardware] S (0/1)[] C (0/1)[]\nECO: M (1/2)[desenvolvimento de placa] S (0/1)[] C (0/2)[]\nLING: M (0/1)[] S (1/1)[c++] C (1/1)[python]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n193-36: SEM_COMUM\n193-335: SEM_COMUM\n193-508: SEM_COMUM\",\"Dom\u00ednio: Mobile, IoT\nEcossistema: Android, Eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos), Prototipa\u00e7\u00e3o\nLinguagens: Kotlin, C++\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[iot] C (0/1)[]\nECO: M (0/2)[] S (1/1)[eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)] C (1/2)[prototipa\u00e7\u00e3o]\nLING: M (0/1)[] S (1/1)[c++] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n36-193: SEM_COMUM\n36-335: SEM_COMUM\n36-508: SEM_COMUM\",\"Dom\u00ednio: Desktop, Cloud\nEcossistema: .NET, Instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico)\nLinguagens: C#, C\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[cloud]\nECO: M (0/2)[] S (0/1)[] C (1/2)[instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico)]\nLING: M (1/1)[c] S (0/1)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n335-508: P196(osf=0.888,slf=0.339)\n335-193: P85(osf=0.784,slf=0.538); P82(osf=0.567,slf=0.737)\n335-36: P82(osf=0.567,slf=0.737)\"\n,,,Dev242,Dev168,Dev446,Dev93,2,3,,\"DOM M(2/2)[hardware, embedded] S(1/1)[iot] C(1/1)[cloud] | ECO M(2/2)[pcb, desenvolvimento de placa] S(1/1)[eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)] C(2/2)[instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico), prototipa\u00e7\u00e3o] | LING M(1/1)[c] S(1/1)[c++] C(1/1)[python]\",2/2,1/1,1/1,2/2,1/1,2/2,1/1,1/1,1/1,TRUE,OK,0,\"Dom\u00ednio: Web, Embedded, Hardware\nEcossistema: Node.js, PCB\nLinguagens: JavaScript, C, C++\n\nMatch (requisitos do projeto):\nDOM: M (2/2)[hardware, embedded] S (0/1)[] C (0/1)[]\nECO: M (1/2)[pcb] S (0/1)[] C (0/2)[]\nLING: M (1/1)[c] S (1/1)[c++] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n242-93: SEM_COMUM\n242-168: SEM_COMUM\n242-446: SEM_COMUM\",\"Dom\u00ednio: Mobile, IoT\nEcossistema: Android, Eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (1/1)[iot] C (0/1)[]\nECO: M (0/2)[] S (1/1)[eletr\u00f4nica (circuitos l\u00f3gicos e anal\u00f3gicos)] C (0/2)[]\nLING: M (0/1)[] S (0/1)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe [Dev242, Dev168, Dev446, Dev93]):\n168-242: SEM_COMUM\n168-446: SEM_COMUM\n168-93: SEM_COMUM\",\"Dom\u00ednio: Mobile\nEcossistema: Android, Desenvolvimento de Placa, Prototipa\u00e7\u00e3o\nLinguagens: Kotlin\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (0/1)[]\nECO: M (1/2)[desenvolvimento de placa] S (0/1)[] C (1/2)[prototipa\u00e7\u00e3o]\nLING: M (0/1)[] S (0/1)[] C (0/1)[]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n446-93: SEM_COMUM\n446-168: SEM_COMUM\n446-242: SEM_COMUM\",\"Dom\u00ednio: Desktop, Cloud\nEcossistema: .NET, Instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico)\nLinguagens: C#, Python\n\nMatch (requisitos do projeto):\nDOM: M (0/2)[] S (0/1)[] C (1/1)[cloud]\nECO: M (0/2)[] S (0/1)[] C (1/2)[instrumenta\u00e7\u00e3o (oscilosc\u00f3pio, analisador l\u00f3gico)]\nLING: M (0/1)[] S (0/1)[] C (1/1)[python]\n\nColabora\u00e7\u00e3o (somente com membros desta equipe):\n93-168: SEM_COMUM\n93-242: SEM_COMUM\n93-446: SEM_COMUM\"\n,,,Dev568,Dev463,Dev7,Dev498,5,5,,DOM M(0/2)[] S(0/1)[] C(0/1)[] | ECO M(0/2)[] S(0/1)[] C(0/3)[] | LING M(0/1)[] S(0/1)[] C(0/1)[],0/2,0/1,0/1,0/2,0/1,0/3,0/1,0/1,0/1,FALSE,DOM faltam 2 | ECO faltam 2 | LING faltam 1,5,\"Dom\u00ednio: Web\n Ecossistema: React\n Linguagens: JavaScript\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/2)[]\n LING: M (0/1)[] S (0/1)[] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe [Dev568, Dev463, Dev7, Dev498]):\n 568-463: P184(osf=0.615,slf=0.450); P272(osf=0.487,slf=0.637); P274(osf=0.411,slf=0.591)\n 568-7: SEM_COMUM\n 568-498: SEM_COMUM\",\"Dom\u00ednio: Web\n Ecossistema: Vue\n Linguagens: JavaScript\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/3)[]\n LING: M (0/1)[] S (0/1)[] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe):\n 463-7: SEM_COMUM\n 463-498: SEM_COMUM\n 463-568: SEM_COMUM\",\"Dom\u00ednio: Web\n Ecossistema: React\n Linguagens: JavaScript\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/3)[]\n LING: M (0/1)[] S (0/1)[] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe):\n 7-463: SEM_COMUM\n 7-498: SEM_COMUM\n 7-568: SEM_COMUM\",\"Dom\u00ednio: Mobile\n Ecossistema: Android\n Linguagens: Kotlin\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/2)[]\n LING: M (0/1)[] S (1/1)[kotlin] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe [Dev568, Dev463, Dev7, Dev498]):\n 498-568: SEM_COMUM\n 498-463: P85(osf=0.784,slf=0.538); P82(osf=0.567,slf=0.737)\n 498-7: P85(osf=0.784,slf=0.538); P82(osf=0.567,slf=0.737)\"\n,,,Dev67,Dev94,Dev291,Dev450,5,5,,DOM M(0/2)[] S(0/1)[] C(0/1)[] | ECO M(0/2)[] S(0/1)[] C(0/3)[] | LING M(0/1)[] S(0/1)[] C(0/1)[],0/2,0/1,0/1,0/2,0/1,0/3,0/1,0/1,0/1,FALSE,DOM faltam 2 | ECO faltam 2 | LING faltam 1,5,\"Dom\u00ednio: Web\n Ecossistema: Spring Boot\n Linguagens: Java\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/2)[]\n LING: M (0/1)[] S (0/1)[] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe [Dev498, Dev67, Dev94, Dev291]):\n 67-498: SEM_COMUM\n 67-94: SEM_COMUM\n 67-291: SEM_COMUM\",\"Dom\u00ednio: Web\n Ecossistema: Vue\n Linguagens: JavaScript\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/2)[]\n LING: M (0/1)[] S (0/1)[] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe [Dev498, Dev67, Dev94, Dev291]):\n 94-498: SEM_COMUM\n 94-67: SEM_COMUM\n 94-291: P82(osf=0.567,slf=0.737)\",\"Dom\u00ednio: Desktop\n Ecossistema: .NET\n Linguagens: C#\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/2)[]\n LING: M (0/1)[] S (0/1)[] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe [Dev498, Dev67, Dev94, Dev291]):\n 291-498: SEM_COMUM\n 291-67: SEM_COMUM\n 291-94: P82(osf=0.567,slf=0.737)\",\"Dom\u00ednio: Desktop\n Ecossistema: .NET\n Linguagens: C#\n \n Match (requisitos do projeto):\n DOM: M (0/2)[] S (0/1)[] C (0/1)[]\n ECO: M (0/2)[] S (0/1)[] C (0/3)[]\n LING: M (0/1)[] S (0/1)[] C (0/1)[]\n \n Colabora\u00e7\u00e3o (somente com membros desta equipe):\n 450-67: SEM_COMUM\n 450-94: SEM_COMUM\n 450-291: SEM_COMUM\"\n,,,,,,,,,,,,,,,,,,,,,,,,,,\n,,,,,,,,,,,,,,,,,,,,,,,,,,\n,,,,,,,,,,-,,,,,,,,,,,,,,,,";
+
+  // Rank color map: fixed across all projects
+  function rankColor(rank){
+    const r = Number(rank);
+    if (r === 1) return "#f39c12"; // orange
+    if (r === 2) return "#3498db"; // blue
+    if (r === 3) return "#2ecc71"; // green
+    if (r === 4) return "#9b59b6"; // purple
+    if (r === 5) return "#e74c3c"; // red
+    // extra ranks
+    const palette = ["#e67e22","#1abc9c","#95a5a6","#f1c40f","#16a085","#d35400","#7f8c8d"];
+    if (isFinite(r) && r > 5) return palette[(r-6) % palette.length];
+    return "#95a5a6";
+  }
+
+  // -----------------------
+  // Helpers
+  // -----------------------
+  function asBool(v) {
+    if (v === true || v === false) return v;
+    if (v == null) return null;
+    const s = String(v).trim().toLowerCase();
+    if (s === "true" || s === "1" || s === "yes" || s === "sim") return true;
+    if (s === "false" || s === "0" || s === "no" || s === "nao" || s === "não") return false;
+    return null;
+  }
+
+  function parseFrac(x) {
+    if (x == null) return {num: 0, den: 0, rate: 0};
+    const s = String(x).trim();
+    if (!s) return {num: 0, den: 0, rate: 0};
+    if (s.includes("/")) {
+      const [a,b] = s.split("/");
+      const num = Number(a);
+      const den = Number(b);
+      if (!isFinite(num) || !isFinite(den) || den === 0) return {num: 0, den: 0, rate: 0};
+      return {num, den, rate: num/den};
+    }
+    const n = Number(s);
+    if (!isFinite(n)) return {num: 0, den: 0, rate: 0};
+    return {num: n, den: 1, rate: n};
+  }
+
+  function safeNum(x, fallback=0) {
+    const n = Number(x);
+    return isFinite(n) ? n : fallback;
+  }
+
+  function setStatus(msg) {
+    document.getElementById("status").textContent = msg || "";
+  }
+
+  function unique(arr) {
+    return Array.from(new Set(arr)).filter(v => v != null && String(v).trim() !== "");
+  }
+
+  // Parse technologies from team_match_summary
+  // Example:
+  // DOM M(1/2)[web] S(0/1)[] C(1/1)[mobile] | ECO ... | LING ...
+  function parseTechSummary(summary){
+    const s = (summary || "").toString();
+    if (!s.trim()) return [];
+    const parts = s.split("|").map(p => p.trim()).filter(Boolean);
+    const techs = [];
+    for (const part of parts){
+      const dimMatch = part.match(/^(DOM|ECO|LING)\b/i);
+      const dim = dimMatch ? dimMatch[1].toUpperCase() : "UNK";
+
+      // find M[...] S[...] C[...]
+      const re = /(M|S|C)\([^\)]*\)\[([^\]]*)\]/g;
+      let m;
+      while ((m = re.exec(part)) !== null){
+        const pri = m[1]; // M/S/C
+        const list = (m[2] || "").trim();
+        if (!list) continue;
+        const items = list.split(",").map(x => x.trim()).filter(Boolean);
+        for (const it of items){
+          techs.push({dim, pri, tech: it});
+        }
+      }
+    }
+    return techs;
+  }
+
+  // -----------------------
+  // State
+  // -----------------------
+  let rawRows = [];
+  let rows = [];
+  let filtered = [];
+  let table = null;
+
+  // -----------------------
+  // Normalize: forward-fill + derived metrics
+  // -----------------------
+  function normalize(inputRows) {
+    let lastPid = null;
+    let lastProjText = null;
+
+    const out = [];
+    for (const r of inputRows) {
+      const pid = (r["projeto_id"] ?? r["project_id"]);
+      const projText = (r["projeto e requisitos"] ?? r["projeto"] ?? r["project_desc"]);
+
+      const pidClean = (pid == null || String(pid).trim()==="") ? null : String(pid).trim();
+      const projClean = (projText == null || String(projText).trim()==="") ? null : String(projText).trim();
+
+      if (pidClean) lastPid = pidClean;
+      if (projClean) lastProjText = projClean;
+
+      const row = {};
+      row.project_id = lastPid;
+      row.projeto_e_requisitos = lastProjText;
+
+      row.equipe_id = r["equipe_id"] ?? r["team_id"] ?? "";
+      row.team_str = r["team_str"] ?? "";
+      row.dev1 = r["dev1"] ?? "";
+      row.dev2 = r["dev2"] ?? "";
+      row.dev3 = r["dev3"] ?? "";
+      row.dev4 = r["dev4"] ?? "";
+      row.rank_expert = safeNum(r["rank_expert"], null);
+
+      row.team_match_summary = r["team_match_summary"] ?? "";
+
+      const domM = parseFrac(r["DOM_M"]);
+      const domS = parseFrac(r["DOM_S"]);
+      const domC = parseFrac(r["DOM_C"]);
+      const ecoM = parseFrac(r["ECO_M"]);
+      const ecoS = parseFrac(r["ECO_S"]);
+      const ecoC = parseFrac(r["ECO_C"]);
+      const linM = parseFrac(r["LING_M"]);
+      const linS = parseFrac(r["LING_S"]);
+      const linC = parseFrac(r["LING_C"]);
+
+      row.DOM_M = r["DOM_M"]; row.DOM_S = r["DOM_S"]; row.DOM_C = r["DOM_C"];
+      row.ECO_M = r["ECO_M"]; row.ECO_S = r["ECO_S"]; row.ECO_C = r["ECO_C"];
+      row.LING_M = r["LING_M"]; row.LING_S = r["LING_S"]; row.LING_C = r["LING_C"];
+
+      // total counts per priority (across dimensions)
+      row.m_cov = domM.num + ecoM.num + linM.num;
+      row.m_tot = domM.den + ecoM.den + linM.den;
+      row.s_cov = domS.num + ecoS.num + linS.num;
+      row.s_tot = domS.den + ecoS.den + linS.den;
+      row.c_cov = domC.num + ecoC.num + linC.num;
+      row.c_tot = domC.den + ecoC.den + linC.den;
+
+      row.cover_must_rate = row.m_tot ? (row.m_cov / row.m_tot) : 0;
+
+      row.MUST_OK = asBool(r["MUST_OK"]);
+      row.FALTAS_MUST = r["FALTAS_MUST"] ?? "";
+      row.TOTAL_FALTAS_MUST = safeNum(r["TOTAL_FALTAS_MUST"], null);
+
+      // keep notes (useful for search/table drill)
+      row.note_dev1 = r["note_dev1"] ?? "";
+      row.note_dev2 = r["note_dev2"] ?? "";
+      row.note_dev3 = r["note_dev3"] ?? "";
+      row.note_dev4 = r["note_dev4"] ?? "";
+
+      const hasTeam = String(row.dev1).trim() !== "" || String(row.equipe_id).trim() !== "";
+      if (row.project_id && hasTeam) out.push(row);
+    }
+    return out;
+  }
+
+  // -----------------------
+  // UI: dropdowns
+  // -----------------------
+  function populateProjectSelect() {
+    const sel = document.getElementById("projectSelect");
+    sel.innerHTML = "";
+    const projects = unique(rows.map(r => r.project_id));
+    for (const p of projects) {
+      const opt = document.createElement("option");
+      opt.value = p; opt.textContent = p;
+      sel.appendChild(opt);
+    }
+    if (projects.length) sel.value = projects[0];
+  }
+
+  function populateTeamSelect() {
+    const sel = document.getElementById("teamSelect");
+    sel.innerHTML = "";
+    // teams available in current filtered list (sorted by rank)
+    const list = [...filtered].sort((a,b)=> (a.rank_expert??9999) - (b.rank_expert??9999));
+    for (const r of list) {
+      const opt = document.createElement("option");
+      opt.value = r.equipe_id || r.team_str || String(r.rank_expert);
+      const id = (r.equipe_id || r.team_str || "").toString();
+      opt.textContent = `Rank ${r.rank_expert ?? "—"} — ${id}`;
+      sel.appendChild(opt);
+    }
+    // default: first team
+    if (sel.options.length) sel.value = sel.options[0].value;
+  }
+
+  function getFilters() {
+    const project = document.getElementById("projectSelect").value;
+    const topK = Number(document.getElementById("topK").value);
+    const mustOk = document.getElementById("mustOk").value;
+    const maxFaltas = safeNum(document.getElementById("maxFaltas").value, 999999);
+    const searchText = document.getElementById("searchText").value.trim().toLowerCase();
+    const teamKey = document.getElementById("teamSelect").value;
+    return { project, topK, mustOk, maxFaltas, searchText, teamKey };
+  }
+
+  // -----------------------
+  // Filter pipeline
+  // -----------------------
+  function applyFilters() {
+    const f = getFilters();
+    let tmp = rows.filter(r => r.project_id === f.project);
+
+    if (f.mustOk !== "all") {
+      const want = (f.mustOk === "true");
+      tmp = tmp.filter(r => r.MUST_OK === want);
+    }
+
+    tmp = tmp.filter(r => (r.TOTAL_FALTAS_MUST == null ? true : r.TOTAL_FALTAS_MUST <= f.maxFaltas));
+
+    if (f.searchText) {
+      tmp = tmp.filter(r => {
+        const hay = [
+          r.equipe_id, r.team_str, r.dev1, r.dev2, r.dev3, r.dev4,
+          r.FALTAS_MUST, r.team_match_summary, r.note_dev1, r.note_dev2, r.note_dev3, r.note_dev4
+        ].join(" ").toLowerCase();
+        return hay.includes(f.searchText);
+      });
+    }
+
+    tmp.sort((a,b) => {
+      const ra = (a.rank_expert == null ? 999999 : a.rank_expert);
+      const rb = (b.rank_expert == null ? 999999 : b.rank_expert);
+      return ra - rb;
+    });
+
+    if (isFinite(f.topK) && f.topK < 9999) {
+      tmp = tmp.filter(r => (r.rank_expert != null && r.rank_expert <= f.topK));
+    }
+
+    filtered = tmp;
+    populateTeamSelect();
+    renderAll();
+  }
+
+  // -----------------------
+  // KPIs
+  // -----------------------
+  function setKPI(elId, value, sub, tone=null) {
+    const el = document.getElementById(elId);
+    el.classList.remove("good","warn","bad");
+    if (tone) el.classList.add(tone);
+    el.querySelector(".value").textContent = value;
+    if (sub != null) el.querySelector(".sub").textContent = sub;
+  }
+
+  function renderKPIs() {
+    const n = filtered.length;
+    const mustOkCount = filtered.filter(r => r.MUST_OK === true || (r.TOTAL_FALTAS_MUST === 0)).length;
+    const mustPct = n ? (mustOkCount / n) : 0;
+
+    const faltas = filtered.map(r => r.TOTAL_FALTAS_MUST).filter(v => v != null && isFinite(v));
+    const avgF = faltas.length ? (faltas.reduce((a,b)=>a+b,0)/faltas.length) : 0;
+
+    const ranks = filtered.map(r => r.rank_expert).filter(v => v != null && isFinite(v));
+    const avgR = ranks.length ? (ranks.reduce((a,b)=>a+b,0)/ranks.length) : 0;
+
+    const toneMust = mustPct >= 0.95 ? "good" : (mustPct >= 0.7 ? "warn" : "bad");
+    const toneF = avgF <= 0.2 ? "good" : (avgF <= 1 ? "warn" : "bad");
+    const toneR = avgR <= 2 ? "good" : (avgR <= 3.5 ? "warn" : "bad");
+
+    setKPI("kpiTeams", String(n), "linhas na tabela", null);
+    setKPI("kpiMustOk", (mustPct*100).toFixed(0) + "%", `${mustOkCount} / ${n} equipes`, toneMust);
+    setKPI("kpiAvgFaltas", avgF.toFixed(2), "menor é melhor", toneF);
+    setKPI("kpiAvgRank", avgR.toFixed(2), "menor é melhor", toneR);
+  }
+
+  function renderProjectSummary() {
+    const f = getFilters();
+    const proj = rows.find(r => r.project_id === f.project);
+    document.getElementById("projectSummary").textContent = (proj?.projeto_e_requisitos || "—");
+  }
+
+  // -----------------------
+  // Donuts
+  // -----------------------
+  function getSelectedTeamRow(){
+    const f = getFilters();
+    const key = f.teamKey;
+    if (!key) return null;
+    return filtered.find(r => (r.equipe_id || r.team_str || String(r.rank_expert)) === key) || filtered[0] || null;
+  }
+
+  function renderDonutTech(){
+    const r = getSelectedTeamRow();
+    const el = document.getElementById("donutTech");
+    if (!r){ Plotly.purge(el); return; }
+
+    const techs = parseTechSummary(r.team_match_summary);
+
+    // unique by dim+tech
+    const seen = new Set();
+    const labels = [];
+    const values = [];
+    const hover = [];
+    for (const t of techs){
+      const k = `${t.dim}::${t.tech}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      labels.push(`${t.tech} (${t.dim})`);
+      values.push(1);
+      hover.push(`<b>${t.tech}</b><br>Dim: ${t.dim}<br>Prioridade: ${t.pri}<br><span style="color:${rankColor(r.rank_expert)}">Rank ${r.rank_expert}</span>`);
+    }
+
+    // if empty, show placeholder
+    if (!labels.length){
+      labels.push("— sem lista —");
+      values.push(1);
+      hover.push("Sem tecnologias no team_match_summary");
+    }
+
+    const trace = {
+      type: "pie",
+      labels,
+      values,
+      hole: 0.55,
+      sort: false,
+      direction: "clockwise",
+      textinfo: "label",
+      textposition: "inside",
+      hovertext: hover,
+      hoverinfo: "text",
+      marker: {
+        line: {color: rankColor(r.rank_expert), width: 3}
+      }
+    };
+
+    const layout = {
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      margin: {l: 10, r: 10, t: 10, b: 10},
+      font: { color: "rgba(231,238,252,.90)", size: 12 },
+      showlegend: false,
+      annotations: [{
+        text: `<b>${(r.equipe_id || r.team_str || "Equipe")}</b><br><span style="color:${rankColor(r.rank_expert)}">Rank ${r.rank_expert}</span>`,
+        x: 0.5, y: 0.5, showarrow: false, font: {size: 12, color: "rgba(231,238,252,.92)"}
+      }]
+    };
+
+    Plotly.newPlot(el, [trace], layout, {displayModeBar:false, responsive:true});
+  }
+
+  function renderDonutMSC(){
+    const r = getSelectedTeamRow();
+    const el = document.getElementById("donutMSC");
+    if (!r){ Plotly.purge(el); return; }
+
+    const labels = ["MUST (M)", "SHOULD (S)", "COULD (C)"];
+    const values = [r.m_cov, r.s_cov, r.c_cov];
+    const totals = [r.m_tot, r.s_tot, r.c_tot];
+
+    const hover = labels.map((lab,i)=>{
+      const cov = values[i] ?? 0;
+      const tot = totals[i] ?? 0;
+      return `<b>${lab}</b><br>Cobertos: ${cov}<br>Total: ${tot}<br>Taxa: ${(tot ? (cov/tot*100) : 0).toFixed(0)}%`;
+    });
+
+    const trace = {
+      type: "pie",
+      labels,
+      values,
+      hole: 0.55,
+      sort: false,
+      textinfo: "label+percent",
+      hovertext: hover,
+      hoverinfo: "text",
+      marker: {
+        line: {color: rankColor(r.rank_expert), width: 3}
+      }
+    };
+
+    const layout = {
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      margin: {l: 10, r: 10, t: 10, b: 10},
+      font: { color: "rgba(231,238,252,.90)", size: 12 },
+      showlegend: false,
+      annotations: [{
+        text: `<b>Coberturas</b><br><span style="color:${rankColor(r.rank_expert)}">Rank ${r.rank_expert}</span>`,
+        x: 0.5, y: 0.5, showarrow: false, font: {size: 12, color: "rgba(231,238,252,.92)"}
+      }]
+    };
+
+    Plotly.newPlot(el, [trace], layout, {displayModeBar:false, responsive:true});
+  }
+
+  // -----------------------
+  // Charts with fixed colors
+  // -----------------------
+  function renderBarTopK(){
+    // bar length = rank_expert (small is good), colored by rank number
+    const x = filtered.map(r => r.rank_expert ?? null);
+    const y = filtered.map(r => (r.equipe_id || r.team_str || "").toString());
+    const colors = filtered.map(r => rankColor(r.rank_expert));
+    const hover = filtered.map(r => `${(r.equipe_id || r.team_str || "")}<br><b>Rank:</b> ${r.rank_expert}<br>${[r.dev1,r.dev2,r.dev3,r.dev4].filter(Boolean).join(" · ")}`);
+
+    const trace = {
+      type: "bar",
+      orientation: "h",
+      x, y,
+      marker: { color: colors, line: {width: 0} },
+      hovertext: hover,
+      hoverinfo: "text",
+    };
+
+    const layout = {
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      margin: {l: 130, r: 10, t: 5, b: 30},
+      xaxis: { title: "rank_expert (menor é melhor)", color: "rgba(231,238,252,.85)", gridcolor: "rgba(255,255,255,.06)", autorange: "reversed" },
+      yaxis: { color: "rgba(231,238,252,.85)" },
+      font: { color: "rgba(231,238,252,.85)" },
+    };
+
+    Plotly.newPlot("barTopK", [trace], layout, {displayModeBar:false, responsive:true});
+  }
+
+  function renderScatterCoverage(){
+    const xs = filtered.map(r => r.cover_must_rate);
+    const ys = filtered.map(r => (r.TOTAL_FALTAS_MUST == null ? 0 : r.TOTAL_FALTAS_MUST));
+    const colors = filtered.map(r => rankColor(r.rank_expert));
+    const hover = filtered.map(r => `
+      <b>${(r.equipe_id || r.team_str || "")}</b><br>
+      <span style="color:${rankColor(r.rank_expert)}"><b>Rank:</b> ${r.rank_expert}</span><br>
+      ${[r.dev1,r.dev2,r.dev3,r.dev4].filter(Boolean).join(" · ")}<br>
+      Cobertura MUST: ${(r.cover_must_rate*100).toFixed(0)}%<br>
+      Faltas MUST: ${r.TOTAL_FALTAS_MUST ?? "—"}<br>
+      ${r.FALTAS_MUST || ""}
+    `);
+
+    const trace = {
+      type: "scatter",
+      mode: "markers",
+      x: xs,
+      y: ys,
+      text: hover,
+      hoverinfo: "text",
+      marker: {
+        size: 12,
+        color: colors,
+        opacity: 0.92,
+        line: {width: 0}
+      }
+    };
+
+    const layout = {
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      margin: {l: 45, r: 10, t: 5, b: 35},
+      xaxis: {
+        title: "Cobertura MUST (M) — 0..1",
+        color: "rgba(231,238,252,.85)",
+        gridcolor: "rgba(255,255,255,.06)",
+        range: [-0.02, 1.02]
+      },
+      yaxis: {
+        title: "Faltas MUST",
+        color: "rgba(231,238,252,.85)",
+        gridcolor: "rgba(255,255,255,.06)"
+      },
+      font: { color: "rgba(231,238,252,.85)" },
+    };
+
+    Plotly.newPlot("scatterCoverage", [trace], layout, {displayModeBar:false, responsive:true});
+  }
+
+  // -----------------------
+  // Table with fixed colors per rank
+  // -----------------------
+  function renderTable(){
+    const data = filtered.map(r => ({
+      project_id: r.project_id,
+      equipe_id: r.equipe_id,
+      rank_expert: r.rank_expert,
+      devs: [r.dev1,r.dev2,r.dev3,r.dev4].filter(Boolean).join(" · "),
+      MUST_OK: r.MUST_OK,
+      TOTAL_FALTAS_MUST: r.TOTAL_FALTAS_MUST,
+      DOM_M: r.DOM_M, ECO_M: r.ECO_M, LING_M: r.LING_M,
+      DOM_S: r.DOM_S, ECO_S: r.ECO_S, LING_S: r.LING_S,
+      DOM_C: r.DOM_C, ECO_C: r.ECO_C, LING_C: r.LING_C,
+      team_match_summary: r.team_match_summary,
+      FALTAS_MUST: r.FALTAS_MUST
+    }));
+
+    const columns = [
+      {title:"Rank", field:"rank_expert", width:70, sorter:"number"},
+      {title:"Equipe", field:"equipe_id", width:120},
+      {title:"Devs", field:"devs", minWidth:250},
+      {title:"MUST_OK", field:"MUST_OK", width:90},
+      {title:"Faltas", field:"TOTAL_FALTAS_MUST", width:70, sorter:"number"},
+      {title:"DOM M", field:"DOM_M", width:70},
+      {title:"ECO M", field:"ECO_M", width:70},
+      {title:"LING M", field:"LING_M", width:75},
+      {title:"Resumo cobertura", field:"team_match_summary", minWidth:320},
+      {title:"Detalhe faltas MUST", field:"FALTAS_MUST", minWidth:260},
+    ];
+
+    if (!table) {
+      table = new Tabulator("#table", {
+        data,
+        layout: "fitDataStretch",
+        height: 470,
+        columns,
+        pagination: "local",
+        paginationSize: 12,
+        initialSort: [{column:"rank_expert", dir:"asc"}],
+        rowFormatter: function(row) {
+          const d = row.getData();
+          const el = row.getElement();
+          const c = rankColor(d.rank_expert);
+          el.style.boxShadow = `inset 6px 0 0 ${c}`;
+          // subtle tint on best ranks
+          if (d.rank_expert === 1) el.style.background = "rgba(243,156,18,.10)";
+          else if (d.rank_expert === 2) el.style.background = "rgba(52,152,219,.08)";
+          else if (d.rank_expert === 3) el.style.background = "rgba(46,204,113,.07)";
+          else el.style.background = "rgba(255,255,255,.01)";
+        },
+        rowClick: function(e, row){
+          // clicking a row selects the team for donuts
+          const d = row.getData();
+          const sel = document.getElementById("teamSelect");
+          const key = d.equipe_id || String(d.rank_expert);
+          sel.value = key;
+          renderDonutTech();
+          renderDonutMSC();
+        }
+      });
+    } else {
+      table.setData(data);
+    }
+  }
+
+  // -----------------------
+  // Render all
+  // -----------------------
+  function renderAll(){
+    renderKPIs();
+    renderProjectSummary();
+    renderDonutTech();
+    renderDonutMSC();
+    renderBarTopK();
+    renderScatterCoverage();
+    renderTable();
+    const f = getFilters();
+    setStatus(`Projeto: ${f.project} | Linhas: ${filtered.length}`);
+  }
+
+  // -----------------------
+  // Loaders
+  // -----------------------
+  function parseCsvText(text) {
+    return new Promise((resolve, reject) => {
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: false,
+        complete: (res) => resolve(res.data),
+        error: (err) => reject(err),
+      });
+    });
+  }
+
+  async function loadFromText(csvText, sourceLabel="(embedded)") {
+    setStatus("Carregando " + sourceLabel + "…");
+    rawRows = await parseCsvText(csvText);
+    rows = normalize(rawRows);
+    populateProjectSelect();
+    applyFilters();
+    setStatus("Pronto: " + sourceLabel);
+  }
+
+  async function loadFromFile(file) {
+    if (!file) return;
+    setStatus("Lendo arquivo…");
+    const text = await file.text();
+    await loadFromText(text, file.name);
+  }
+
+  // -----------------------
+  // Export filtered CSV
+  // -----------------------
+  function exportFiltered() {
+    const cols = [
+      "project_id","equipe_id","dev1","dev2","dev3","dev4","rank_expert",
+      "MUST_OK","TOTAL_FALTAS_MUST","DOM_M","ECO_M","LING_M","DOM_S","ECO_S","LING_S","DOM_C","ECO_C","LING_C",
+      "team_match_summary","FALTAS_MUST"
+    ];
+    const lines = [];
+    lines.push(cols.join(","));
+    for (const r of filtered) {
+      const row = cols.map(c => {
+        const v = r[c];
+        const s = (v == null ? "" : String(v));
+        if (s.includes('"') || s.includes(",") || s.includes("\n")) {
+          return '"' + s.replaceAll('"','""') + '"';
+        }
+        return s;
+      });
+      lines.push(row.join(","));
+    }
+    const blob = new Blob([lines.join("\n")], {type: "text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const f = getFilters();
+    a.href = url;
+    a.download = `filtered_${f.project}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // -----------------------
+  // Events
+  // -----------------------
+  document.getElementById("btnLoadFile").addEventListener("click", async () => {
+    const fi = document.getElementById("fileInput");
+    if (!fi.files || !fi.files.length) {
+      alert("Selecione um CSV primeiro.");
+      return;
+    }
+    await loadFromFile(fi.files[0]);
+  });
+
+  document.getElementById("btnExportFiltered").addEventListener("click", exportFiltered);
+
+  ["projectSelect","topK","mustOk","maxFaltas","searchText"].forEach(id => {
+    document.getElementById(id).addEventListener("input", applyFilters);
+    document.getElementById(id).addEventListener("change", applyFilters);
+  });
+
+  document.getElementById("teamSelect").addEventListener("change", () => {
+    renderDonutTech();
+    renderDonutMSC();
+  });
+
+  loadFromText(EMBEDDED_CSV, "Ranking_Expert.csv (embutido)");
+</script>
+</body>
+</html>
