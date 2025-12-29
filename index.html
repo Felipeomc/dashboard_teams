@@ -1577,13 +1577,16 @@ $("fileInput").addEventListener("change", async (ev) => {
   loadFromText(text, file.name);
   ev.target.value = ""; // permite reimportar mesmo arquivo
 });
-document.getElementById("fileDetails").addEventListener("change", async (ev)=>{
-  const file = ev.target.files?.[0];
-  if (!file) return;
-  const text = await file.text();
-  loadDetailsFromText(text, file.name);
-  ev.target.value = "";
-});
+const fileDetailsEl = document.getElementById("fileDetails");
+if (fileDetailsEl) {
+  fileDetailsEl.addEventListener("change", async (ev) => {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    loadDetailsFromText(text, file.name);
+    ev.target.value = "";
+  });
+}
 
 
 $("btnSample").addEventListener("click", loadSample);
