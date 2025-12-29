@@ -313,16 +313,13 @@
       <div class="hd">
         <strong>1) Dados (importar / atualizar)</strong>
         <div class="row">
-          <label class="file btn">
-            <input id="fileInput" type="file" accept=".csv,.tsv,.txt" />
+          <label class="btn">
+            <input id="fileInput" class="btn" type="file" accept=".csv,.tsv,.txt" />
             Importar arquivo
           </label>
           <button id="btnSample" class="btn">Carregar exemplo</button>
           <button id="btnClear" class="btn">Limpar</button>
-          <label class="file btn">
-            <input id="fileDetails" type="file" accept=".csv,.tsv,.txt" />
-            Importar detalhes
-          </label>
+          
         </div>
       </div>
       <div class="bd">
@@ -1594,14 +1591,29 @@ $("btnClear").addEventListener("click", clearAll);
 
 attachNodeTooltips();
 
-// bootstrap: load last if any
+
+
+// CSV remoto (GitHub Raw, Gist Raw, etc.)
+const DATA_URL = "https://raw.githubusercontent.com/Felipeomc/dashboard_teams/refs/heads/main/Resultados_bn.csv";
+
+async function loadFromUrl(url, name = "csv_remoto"){
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  loadFromText(text, name);
+}
+
 const last = localStorage.getItem("bn_dash_last_text");
 const lastName = localStorage.getItem("bn_dash_last_name") || "(último arquivo)";
 if (last){
-  loadFromText(last, lastName);
+   loadFromText(last, lastName);
 } else {
-  loadSample();
+
+loadFromUrl(DATA_URL, "Resultados_bn.csv (GitHub)")
+    .catch(() => loadSample()); // fallback se estiver offline / URL errada
 }
+
+
 
 function buildDistForRow(row){
   const at = safeParseFloat(row.AT_cont);
