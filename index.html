@@ -1594,7 +1594,8 @@ attachNodeTooltips();
 
 
 // CSV remoto (GitHub Raw, Gist Raw, etc.)
-const DATA_URL = "https://raw.githubusercontent.com/Felipeomc/dashboard_teams/refs/heads/main/Resultados_bn.csv";
+//const DATA_URL = "https://raw.githubusercontent.com/Felipeomc/dashboard_teams/refs/heads/main/Resultados_bn.csv";
+const DATA_URL = "https://raw.githubusercontent.com/Felipeomc/dashboard_teams/main/Resultados_bn.csv";
 
 async function loadFromUrl(url, name = "csv_remoto"){
   const res = await fetch(url, { cache: "no-store" });
