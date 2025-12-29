@@ -1603,15 +1603,17 @@ async function loadFromUrl(url, name = "csv_remoto"){
   loadFromText(text, name);
 }
 
+// bootstrap: primeiro tenta GitHub; se falhar, usa localStorage; se não tiver, sample
 const last = localStorage.getItem("bn_dash_last_text");
 const lastName = localStorage.getItem("bn_dash_last_name") || "(último arquivo)";
-if (last){
-   loadFromText(last, lastName);
-} else {
 
-loadFromUrl(DATA_URL, "Resultados_bn.csv (GitHub)")
-    .catch(() => loadSample()); // fallback se estiver offline / URL errada
-}
+loadFromUrl(DATA_URL, "Resultados_bn.csv (GitHub RAW)")
+  .catch((e) => {
+    console.error("Falha ao carregar GitHub:", e);
+
+    if (last) loadFromText(last, lastName);
+    else loadSample();
+  });
 
 
 
