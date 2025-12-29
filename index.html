@@ -814,6 +814,16 @@ function distFromTier(tier){
   if (k === 0 || k === 1 || k === 2 || k === 3 || k === 4) a[k] = 1;
   return a;
 }
+function distFromTierScore(tier, score){
+  const map = {VL:0, L:1, M:2, H:3, VH:4, "Very Low":0, "Low":1, "Medium":2, "High":3, "Very High":4};
+  const k = map[String(tier||"").trim()];
+  const a = [0,0,0,0,0];
+
+  const s = Number.isFinite(score) ? Math.max(0, Math.min(1, score)) : 1; // clamp 0..1
+  if (k === 0 || k === 1 || k === 2 || k === 3 || k === 4) a[k] = s;
+
+  return a;
+}
 
 function distFromCont(x){
   // aproxima distribuição pelo valor contínuo: quanto mais perto do centroide, maior o peso
@@ -1393,13 +1403,19 @@ function render(){
   // Se existir dist_Dom/dist_Eco/dist_Ling/dist_AT/dist_AC no CSV, usa.
   // Se não existir: Dom/Eco/Ling usa 1-hot pelo tier; AT/AC usa aproximação pelo contínuo.
 
-  const domTier  = row.Dom ?? row.dom ?? row.DOM ?? row.dominio ?? row.dominio_tier ?? "VH";
-  const ecoTier  = row.Eco ?? row.eco ?? row.ECO ?? row.ecossistema ?? row.ecossistema_tier ?? "VH";
-  const lingTier = row.Ling ?? row.ling ?? row.LING ?? row.linguagens ?? row.linguagens_tier ?? "VH";
+  // preferir *_tier do CSV (evita pegar row.dominio/ecossistema/linguagens com strings tipo "web", "react", etc)
+  const domTier  = row.dominio_tier ?? row.Dom ?? row.dom ?? row.DOM ?? "VH";
+  const ecoTier  = row.ecossistema_tier ?? row.Eco ?? row.eco ?? row.ECO ?? "VH";
+  const lingTier = row.linguagens_tier ?? row.Ling ?? row.ling ?? row.LING ?? "VH";
 
-  const distDom = row.dist_Dom ? parseDistAE(row.dist_Dom) : distFromTier(domTier);
-  const distEco = row.dist_Eco ? parseDistAE(row.dist_Eco) : distFromTier(ecoTier);
-  const distLing = row.dist_Ling ? parseDistAE(row.dist_Ling) : distFromTier(lingTier);
+  const domScore  = safeParseFloat(row.dominio_score);
+  const ecoScore  = safeParseFloat(row.ecossistema_score);
+  const lingScore = safeParseFloat(row.linguagens_score);
+
+  const distDom  = row.dist_Dom  ? parseDistAE(row.dist_Dom)  : distFromTierScore(domTier,  domScore);
+  const distEco  = row.dist_Eco  ? parseDistAE(row.dist_Eco)  : distFromTierScore(ecoTier,  ecoScore);
+  const distLing = row.dist_Ling ? parseDistAE(row.dist_Ling) : distFromTierScore(lingTier, lingScore);
+
 
   const distAT = row.dist_AT ? parseDistAE(row.dist_AT) : distFromCont(at);
   const distAC = row.dist_AC ? parseDistAE(row.dist_AC) : distFromCont(ac);
@@ -1434,9 +1450,10 @@ function render(){
   // Renderiza a rede (com setas + gráficos dentro dos nós)
   renderBNGraph(row, {
     dom: distDom, eco: distEco, ling: distLing, pc: distPC, at: distAT, ac: distAC, ae: distAE2,
-    metaDom: row.dist_Dom ? "dist_Dom" : "1-hot",
-    metaEco: row.dist_Eco ? "dist_Eco" : "1-hot",
-    metaLing: row.dist_Ling ? "dist_Ling" : "1-hot",
+    metaDom:  row.dist_Dom  ? "dist_Dom"  : `${String(domTier).trim()} ${(Number.isFinite(domScore)? domScore*100 : 0).toFixed(0)}%`,
+    metaEco:  row.dist_Eco  ? "dist_Eco"  : `${String(ecoTier).trim()} ${(Number.isFinite(ecoScore)? ecoScore*100 : 0).toFixed(0)}%`,
+    metaLing: row.dist_Ling ? "dist_Ling" : `${String(lingTier).trim()} ${(Number.isFinite(lingScore)? lingScore*100 : 0).toFixed(0)}%`,
+
     metaPC: row.dist_PC ? "dist_PC" : (row.PC_VL!==undefined ? "PC_VL..PC_VH" : "fallback"),
   });
 
@@ -1587,6 +1604,7 @@ if (fileDetailsEl) {
     ev.target.value = "";
   });
 }
+
 
 
 $("btnSample").addEventListener("click", loadSample);
