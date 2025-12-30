@@ -144,12 +144,12 @@
   margin-bottom:8px;
 }
 
-.covRows{display:grid; gap:10px;}
-.covRow{display:grid; grid-template-columns: 54px 1fr; gap:10px; align-items:flex-start;}
-.covRow .dim{font-weight:900; font-size:12px; letter-spacing:.5px;}
+.covRows{display:grid; gap:4px;}
+.covRow{display:grid; grid-template-columns: 54px 1fr; gap:4px; align-items:flex-start;}
+.covRow .dim{font-weight:900; font-size:12px; letter-spacing:.1px;}
 
-.covStack{display:grid; gap:6px;}
-.hbarLine{display:grid; grid-template-columns: 26px 1fr auto; gap:8px; align-items:center;}
+.covStack{display:grid; gap:0px;}
+.hbarLine{display:grid; grid-template-columns: 26px 1fr auto; gap:1px; align-items:center;}
 .hbar{
   height:10px;
   background:#fff;
@@ -247,6 +247,134 @@
 .top-controls select{
   min-width:140px;             /* opcional */
 }
+/* ===== Compactar "Cobertura técnica" ===== */
+#projectStrip .stripCard{
+  padding: 6px 8px;     /* antes: 10px */
+  border-radius: 12px;  /* opcional, mais compacto */
+}
+
+#projectStrip .stripTitle{
+  margin-bottom: 4px;   /* antes: 8px */
+  line-height: 1.1;
+}
+
+/* distância entre DOM / ECO / LING */
+#projectStrip .covRows{ gap: 6px; }   /* antes: 10px */
+
+/* bloco de cada dimensão */
+#projectStrip .covRow{
+  grid-template-columns: 44px 1fr; /* antes: 54px 1fr */
+  gap: 3px;                        /* antes: 10px */
+}
+
+#projectStrip .covRow .dim{
+  font-size: 11px;    /* antes: 12px */
+  line-height: 1.1;
+}
+
+/* distância entre M / S / C dentro de cada dimensão */
+#projectStrip .covStack{ gap: 0px; }  /* antes: 6px */
+
+#projectStrip .hbarLine{
+  grid-template-columns: 15px 1fr auto; /* antes: 26px 1fr auto */
+  gap: 1px;                              /* antes: 8px */
+}
+
+#projectStrip .hbar{ height: 8px; }     /* antes: 10px */
+
+#projectStrip .hbarMeta{
+  font-size: 11px;   /* antes: 11px */
+  line-height: 1.1;
+}
+
+/* linha "Coberto: ...  Redund.: ..." */
+#projectStrip .techHint{
+  margin-top: 0;     /* antes: 2px */
+  font-size: 10px;   /* antes: 11px */
+  line-height: 1.12;
+}
+
+/* ===== Radar (Spider) por equipe ===== */
+.radarGrid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:10px;
+  margin-top:10px;
+}
+.radarItem{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:10px;
+  background:#fff;
+  cursor:pointer;
+  transition: transform .05s ease, box-shadow .05s ease;
+}
+.radarItem:hover{ transform: translateY(-1px); box-shadow:0 6px 18px rgba(15,23,42,.08); }
+.radarItem.active{ outline:2px solid #7aa2ff; }
+.radarHead{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:6px;
+}
+.radarHead .dot{
+  width:10px;height:10px;border-radius:999px;display:inline-block;
+}
+.radarSvg{ width:100%; height:220px; display:block; }
+.radarKpis{
+  display:flex;
+  gap:10px;
+  justify-content:space-between;
+  margin-top:4px;
+  font-size:12px;
+  color:#334155;
+}
+.radarKpis .k{ opacity:.75; margin-right:6px; }
+
+
+
+
+/* ===== AFINAR Ranking (força override) ===== */
+#rankBoard.rankBoard{ gap:8px !important; }
+
+#rankBoard .teamCol{
+  flex:0 0 96px !important;      /* antes 128px */
+  padding:6px !important;        /* antes 8px */
+  border-radius:12px !important; /* antes 14px */
+}
+
+#rankBoard .teamName{
+  font-size:10px !important;
+  margin-bottom:2px !important;  /* antes 4px */
+}
+
+#rankBoard .teamDevs{
+  font-size:9px !important;
+  margin-bottom:6px !important;  /* antes 8px */
+}
+
+#rankBoard .vbars{
+  height:72px !important;        /* antes 92px */
+  gap:6px !important;            /* antes 8px */
+}
+
+#rankBoard .vbarBox{
+  height:72px !important;        /* antes 92px */
+  border-radius:9px !important;  /* antes 10px */
+}
+
+#rankBoard .vnum{
+  font-size:11px !important;     /* antes 12px */
+  margin-bottom:4px !important;  /* antes 6px */
+}
+
+#rankBoard .vlab{
+  font-size:8px !important;
+  margin-top:4px !important;     /* antes 6px */
+}
+
+
+
 
   </style>
 </head>
@@ -268,26 +396,10 @@
   </div>
 </div>
 
-  <div class="kpis">
-          <div class="kpi">
-            <div class="t">AE (média)</div>
-            <div class="v" id="kpiAE">—</div>
-            <div class="s" id="kpiAETier">—</div>
-          </div>
-          <div class="kpi">
-            <div class="t">AT (contínuo)</div>
-            <div class="v" id="kpiAT">—</div>
-            <div class="s" id="kpiATTier">—</div>
-          </div>
-          <div class="kpi">
-            <div class="t">AC (contínuo)</div>
-            <div class="v" id="kpiAC">—</div>
-            <div class="s" id="kpiACTier">—</div>
-          </div>
-  </div>
+  
     <!-- STRIP FIXO (Projeto) -->
   <div id="projectStrip" class="projectStrip" style="display:none">
-    <div class="stripCard" style="flex:1.05">
+    <div class="stripCard" style="flex:0.80">
       <div class="stripTitle">
         <span><b>Cobertura técnica</b> (M/S/C) + redundância</span>
         <span class="mini" id="covTeamLabel"></span>
@@ -301,6 +413,33 @@
         <span class="mini" id="rankMeta"></span>
       </div>
       <div id="rankBoard" class="rankBoard"></div>
+    </div>
+
+
+
+    <!-- NOVO: KPIs à direita -->
+    <div class="stripCard kpiStrip" style="flex:0.75">
+      <div class="stripTitle">
+        <span><b>Resumo</b> (AE/AT/AC)</span>
+        <span class="mini"></span>
+      </div>
+
+      <!-- COLE AQUI o seu antigo <div class="kpis"> ... </div> -->
+      <div class="kpis">
+          <div class="kpi">
+            <div class="t">AE  </div>
+            <div class="v" id="kpiAE">—</div>
+            <div class="s" id="kpiAETier">—</div>
+          
+            <div class="t">AT </div>
+            <div class="v" id="kpiAT">—</div>
+            <div class="s" id="kpiATTier">—</div>
+          
+            <div class="t">AC  </div>
+            <div class="v" id="kpiAC">—</div>
+            <div class="s" id="kpiACTier">—</div>
+          </div>
+      </div>
     </div>
   </div>
 
@@ -364,6 +503,15 @@
                   </svg>
                 </div>
               <div style="height:12px"></div>
+
+              <div class="barcard" style="margin-top:10px">
+                <div class="ttl">
+                  <strong>Radar por equipe (OSF / SLF / Projetos em comum)</strong>
+                  <span class="mini" id="projMetaRadar"></span>
+                </div>
+                <div id="radarGrid" class="radarGrid"></div>
+              </div>
+
 
               <div class="barcard">
                 <div class="ttl">
@@ -1023,7 +1171,7 @@ function renderBNGraph(row, dists){
   
 
 
-  const at  = drawNodeWithBars(svg,{x:650,y:170,w:boxW,h:boxH,title:"AT (Technological Fit)",dist:dists.at,
+  const at  = drawNodeWithBars(svg,{x:650,y:250,w:boxW,h:boxH,title:"AT (Technological Fit)",dist:dists.at,
     funcLabel: DEFAULT_MODEL.AT.func,
     weightsLabel:`(Dom=${DEFAULT_MODEL.AT.weights.Dom}, Eco=${DEFAULT_MODEL.AT.weights.Eco}, Ling=${DEFAULT_MODEL.AT.weights.Ling})`,
     tooltipId: "TT_AT"// DEFAULT_MODEL.AT.func === "WMAX" ? "TT_WMAX" : "TT_WMIN"
@@ -1746,6 +1894,207 @@ function drawProjectGroupedIntoGroup(g, W, H, teams, label){
   }
 }
 
+/* =======================
+   Radar por equipe (OSF / SLF / #Projetos em comum)
+   ======================= */
+function clamp01(x){
+  const n = Number(x);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(1, n));
+}
+
+/* ===== PATCH: OSF/SLF por projeto ÚNICO (dedup por PID) =====
+   - Proj: #PIDs distintos (continua igual)
+   - OSF/SLF: média por PID (se P179 aparece 2x, conta 1 vez)
+*/
+function extractTeamCollabStats(obj){
+  const base = (obj && obj.row) ? obj.row : obj;
+  const det  = (typeof getDetailsForRow === "function") ? getDetailsForRow(base) : null;
+  const row  = det || base;
+
+  const cols = ["note_dev1","note_dev2","note_dev3","note_dev4","note_dev5"];
+  const txt = cols
+    .map(c => (row && row[c]) ? String(row[c]) : "")
+    .filter(s => s && s.trim())
+    .join("\n");
+
+  // PIDs distintos (Proj)
+  const pidSet = new Set((txt.match(/\bP\d+\b/gi) || []).map(p => p.toUpperCase()));
+
+  // Mapa PID -> {osf, slf} (dedup)
+  const pidMap = new Map();
+  const re = /\b(P\d+)\b\s*\([^)]*?\bosf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)[^)]*?\bslf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)/gi;
+
+  for (const m of txt.matchAll(re)){
+    const pid = String(m[1]).toUpperCase();
+    const osf = parseFloat(String(m[2]).replace(",", "."));
+    const slf = parseFloat(String(m[3]).replace(",", "."));
+    if (Number.isFinite(osf) && Number.isFinite(slf) && !pidMap.has(pid)){
+      pidMap.set(pid, { osf, slf }); // pega o 1º e ignora duplicatas
+    }
+  }
+
+  // OSF/SLF por PID (único).
+  let osfMean = 0, slfMean = 0;
+
+  if (pidMap.size){
+    let so = 0, ss = 0;
+    for (const v of pidMap.values()){
+      so += v.osf; ss += v.slf;
+    }
+    osfMean = so / pidMap.size;
+    slfMean = ss / pidMap.size;
+  } else {
+    // fallback se não houver PIDs com osf/slf
+    const osfs = [];
+    const slfs = [];
+    for (const m of txt.matchAll(/\bosf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)/gi)){
+      const v = parseFloat(String(m[1]).replace(",", "."));
+      if (Number.isFinite(v)) osfs.push(v);
+    }
+    for (const m of txt.matchAll(/\bslf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)/gi)){
+      const v = parseFloat(String(m[1]).replace(",", "."));
+      if (Number.isFinite(v)) slfs.push(v);
+    }
+    osfMean = osfs.length ? (osfs.reduce((a,b)=>a+b,0)/osfs.length) : 0;
+    slfMean = slfs.length ? (slfs.reduce((a,b)=>a+b,0)/slfs.length) : 0;
+  }
+
+  return { osfMean, slfMean, nCommon: pidSet.size };
+}
+
+
+
+function drawRadar(svg, values, labels, color){
+  if(!svg) return;
+  svgClear(svg);
+
+  const vb = (svg.getAttribute("viewBox")||"0 0 220 220").split(" ").map(Number);
+  const W = vb[2], H = vb[3];
+  const cx = W/2, cy = H/2 + 6;
+  const R  = Math.min(W,H) * 0.34; // ~75
+
+  const N = labels.length;
+  const levels = 4;
+  const a0 = -Math.PI/2;
+
+  function pt(i, s){
+    const ang = a0 + i*(2*Math.PI/N);
+    return { x: cx + s*R*Math.cos(ang), y: cy + s*R*Math.sin(ang) };
+  }
+
+  // grid
+  for (let l=1; l<=levels; l++){
+    const s = l/levels;
+    const pts = [];
+    for (let i=0; i<N; i++){
+      const p = pt(i,s);
+      pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+    }
+    svg.appendChild(svgEl("polygon", { points: pts.join(" "), fill:"none", stroke:"#e5e7eb", "stroke-width":"1" }));
+  }
+
+  // axes
+  for (let i=0; i<N; i++){
+    const p = pt(i,1);
+    svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:p.x, y2:p.y, stroke:"#cbd5e1", "stroke-width":"1" }));
+  }
+
+  // labels
+  for (let i=0; i<N; i++){
+    const p = pt(i,1.18);
+    const t = svgEl("text", { x:p.x, y:p.y, fill:"#475569", "font-size":"16", "font-family":"ui-monospace" });
+    t.setAttribute("text-anchor", (p.x < cx-10) ? "end" : (p.x > cx+10 ? "start" : "middle"));
+    t.textContent = labels[i];
+    svg.appendChild(t);
+  }
+
+  // polygon
+  const poly = [];
+  for (let i=0; i<N; i++){
+    const v = clamp01(values[i]);
+    const p = pt(i, v);
+    poly.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+  }
+  svg.appendChild(svgEl("polygon", { points: poly.join(" "), fill: color, opacity:"0.22", stroke: color, "stroke-width":"2" }));
+
+  // vertices
+  for (let i=0; i<N; i++){
+    const v = clamp01(values[i]);
+    const p = pt(i, v);
+    svg.appendChild(svgEl("circle", { cx:p.x, cy:p.y, r:"3.4", fill: color }));
+  }
+  svg.appendChild(svgEl("circle", { cx, cy, r:"2.2", fill:"#0b1220" }));
+}
+
+function renderProjectRadars(projectId, orderedRows){
+  const grid = $("radarGrid");
+  if (!grid) return;
+
+  grid.innerHTML = "";
+
+  const MAX_TEAMS = 5;
+  const top = (orderedRows || []).slice(0, MAX_TEAMS);
+
+  if (!top.length){
+    grid.innerHTML = '<div class="mini">Sem equipes para este projeto.</div>';
+    return;
+  }
+
+  const stats = top.map((r, idx)=>{
+    const base = (r && r.row) ? r.row : r;
+    const label = String(base.team_id || r.label || `TEAM${idx}`);
+    const color = COLORS[idx % COLORS.length];
+    const s = extractTeamCollabStats(r); // aceita base ou objeto com .row
+    return { label, color, row: base, ...s };
+  });
+
+
+  const maxCommon = Math.max(1, ...stats.map(s=>s.nCommon));
+  setText("projMetaRadar", `Proj normalizado por /${maxCommon}`);
+
+  const selectedTeam = $("teamSel") ? String($("teamSel").value||"") : "";
+
+  stats.forEach((t)=>{
+    const card = document.createElement("div");
+    card.className = "radarItem" + ((String(t.label)===selectedTeam) ? " active" : "");
+    card.innerHTML = `
+      <div class="radarHead">
+        <span class="dot" style="background:${t.color}"></span>
+        <span class="mono">${escapeHtml(t.label)}</span>
+      </div>
+      <svg class="radarSvg" viewBox="0 0 220 220"></svg>
+      <div class="radarKpis">
+        <div><span class="k">OSF</span><span class="v mono">${fmt(t.osfMean,3)}</span></div>
+        <div><span class="k">SLF</span><span class="v mono">${fmt(t.slfMean,3)}</span></div>
+        <div><span class="k">Proj</span><span class="v mono">${t.nCommon}</span></div>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    const svg = card.querySelector("svg");
+    drawRadar(svg,
+      [
+        clamp01(t.osfMean),
+        clamp01(t.slfMean),
+        clamp01(t.nCommon / maxCommon)
+      ],
+      ["OSF","SLF","Proj"],
+      t.color
+    );
+
+    // clique no radar => seleciona a equipe
+    card.addEventListener("click", ()=>{
+      const sel = $("teamSel");
+      if (sel){
+        sel.value = t.label;
+        render(); // já existe no seu arquivo
+      }
+    });
+  });
+}
+
+
 function renderProjectComparison(projectId){
   if (!DATA || DATA.length===0) return;
   const rows = DATA.filter(r=>String(r.projeto_id||r.project_id||"")===String(projectId));
@@ -1762,9 +2111,13 @@ function renderProjectComparison(projectId){
     const label = String(r.team_id||`TEAM${idx}`);
     const color = COLORS[idx % COLORS.length];
     const d = buildDistForRow(r);
-    return {label,color,...d};
+    return { label, color, row: r, ...d }; // <-- adiciona row:r
   });
+    // Radars (OSF / SLF / #Projetos em comum)
+  renderProjectRadars(projectId, ordered.slice(0, MAX_TEAMS));
 
+  
+  
   drawProjectGrouped($("projAT"), teams.map(t=>({label:t.label,color:t.color,dist:t.distAT})));
   drawProjectGrouped($("projAC"), teams.map(t=>({label:t.label,color:t.color,dist:t.distAC})));
   drawProjectGrouped($("projAE"), teams.map(t=>({label:t.label,color:t.color,dist:t.distAE})));
