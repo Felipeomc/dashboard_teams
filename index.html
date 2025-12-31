@@ -15,7 +15,7 @@
     }
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text);}
-    header{padding:18px 18px 10px; position:sticky; top:0; background:rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom:1px solid var(--line); z-index:10}
+    header{padding:10px 14px 6px; position:sticky; top:0; background:rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom:1px solid var(--line); z-index:10}
     h1{font-size:16px; margin:0 0 6px; font-weight:700; letter-spacing:.2px}
     .sub{color:var(--muted); font-size:12px; margin:0}
     .wrap{padding:16px 18px 26px; max-width:1300px; margin:0 auto;}
@@ -26,7 +26,7 @@
     .card .hd strong{font-size:13px}
     .card .bd{padding:12px;}
     .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .pill{font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--line); padding:6px 8px; border-radius:999px; background:var(--card2)}
+    .pill{font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); padding:6px 8px; border-radius:999px; background:var(--card2)}
     .btn{cursor:pointer; border:1px solid var(--line); background:linear-gradient(180deg,#ffffff, #f3f4f6);
          color:var(--text); padding:8px 10px; border-radius:12px; font-size:12px; font-weight:600;}
     .btn:hover{border-color:#2f425f}
@@ -57,26 +57,39 @@
       align-items:baseline;
       column-gap:14px;
     }
-    .kpi .t{font-size:11px; color:var(--muted); margin-bottom:6px}
+    .kpi .t{font-size:12px; color:var(--muted); margin-bottom:6px}
     .kpi .v{font-family:var(--mono); font-size:16px; font-weight:700}
-    .kpi .s{font-size:11px; color:var(--muted); margin-top:2px}
+    .kpi .s{font-size:12px; color:var(--muted); margin-top:2px}
     .split{display:grid; gap:12px}
     @media(min-width:900px){ .split{grid-template-columns: 1fr 1fr;} }
     .svgbox{width:100%; overflow:auto; padding:8px 8px 2px}
-    .mini{font-size:11px; color:var(--muted)}
+    .mini{font-size:12px; color:var(--muted)}
     table{width:100%; border-collapse:collapse; font-size:12px}
     th,td{border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; vertical-align:top}
-    th{font-size:11px; color:var(--muted); font-weight:700}
-    td code{font-family:var(--mono); font-size:11px; color:#0b1220}
+    th{font-size:12px; color:var(--muted); font-weight:700}
+    td code{font-family:var(--mono); font-size:12px; color:#0b1220}
     .barwrap{display:grid; gap:10px}
+    .grid2{display:grid; gap:10px}
+    @media(min-width:980px){
+      .grid2{grid-template-columns: repeat(3, minmax(0,1fr)); align-items:start;}
+      /* 4º card (Dom/Eco/Ling/PC) ocupa a linha inteira */
+      .grid2 > .barcard:nth-child(4){grid-column:1 / -1;}
+    }
+    @media(min-width:700px) and (max-width:979px){
+      .grid2{grid-template-columns: 1fr 1fr;}
+      /* deixa AE ocupar a linha inteira para não esmagar */
+      .grid2 > .barcard:nth-child(3){grid-column:1 / -1;}
+      .grid2 > .barcard:nth-child(4){grid-column:1 / -1;}
+    }
+
     .barcard{background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:10px}
     .barcard .ttl{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
     .barcard .ttl strong{font-size:12px}
-    .barcard .ttl span{font-family:var(--mono); font-size:11px; color:var(--muted)}
+    .barcard .ttl span{font-family:var(--mono); font-size:12px; color:var(--muted)}
     .legend{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px}
-    .leg{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted)}
+    .leg{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted)}
     .sw{width:10px; height:10px; border-radius:3px; background:#999}
-    .foot{color:var(--muted); font-size:11px; margin-top:10px}
+    .foot{color:var(--muted); font-size:12px; margin-top:10px}
     .ok{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
     .mono{font-family:var(--mono)}
     .err{background:rgba(255,107,107,.08); border:1px solid rgba(255,107,107,.35); color:#0b1220; padding:10px; border-radius:14px; font-size:12px}
@@ -100,8 +113,8 @@
     }
     .tooltip .tt-title{font-weight:800; margin-bottom:6px;}
     .formulaTag{cursor:help; text-decoration:underline; text-underline-offset:2px;}
-    .tooltip .tt-mono{font-family:var(--mono); font-size:11px; color:var(--text); background:#f6f8fb; border:1px solid var(--line); padding:6px 8px; border-radius:12px; display:inline-block;}
-    .tooltip .tt-muted{color:var(--muted); font-size:11px; margin-top:6px;}
+    .tooltip .tt-mono{font-family:var(--mono); font-size:12px; color:var(--text); background:#f6f8fb; border:1px solid var(--line); padding:6px 8px; border-radius:12px; display:inline-block;}
+    .tooltip .tt-muted{color:var(--muted); font-size:12px; margin-top:6px;}
     #bnGraphWrap{
       overflow:auto;
       border:1px solid #e5e7eb;
@@ -123,7 +136,7 @@
 /* =======================
    STRIP FIXO (Projeto)
    ======================= */
-.projectStrip{margin-top:10px; display:flex; gap:12px; align-items:stretch;}
+.projectStrip{margin-top:6px; display:flex; gap:10px; align-items:stretch;}
 @media(max-width:1000px){ .projectStrip{flex-direction:column;} }
 
 .stripCard{
@@ -139,7 +152,7 @@
   align-items:baseline;
   justify-content:space-between;
   gap:10px;
-  font-size:11px;
+  font-size:12px;
   color:var(--muted);
   margin-bottom:8px;
 }
@@ -163,9 +176,9 @@
 }
 .hbarLine[data-kind="S"] .hbar > span{background:linear-gradient(90deg, rgba(31,157,85,.18), rgba(31,157,85,.75));}
 .hbarLine[data-kind="C"] .hbar > span{background:linear-gradient(90deg, rgba(180,83,9,.18), rgba(180,83,9,.75));}
-.hbarMeta{font-family:var(--mono); font-size:11px; color:var(--muted); white-space:nowrap;}
+.hbarMeta{font-family:var(--mono); font-size:12px; color:var(--muted); white-space:nowrap;}
 
-.techHint{font-size:11px; color:var(--muted); margin-top:2px; line-height:1.25;}
+.techHint{font-size:12px; color:var(--muted); margin-top:2px; line-height:1.25;}
 .techHint b{color:var(--text); font-weight:800;}
 
 /* Ranking board */
@@ -182,14 +195,14 @@
 .teamCol.active{outline:2px solid rgba(47,107,255,.35); border-color:#2f6bff;}
 
 .teamName{
-  font-size:11px;
+  font-size:12px;
   font-weight:900;
   margin-bottom:4px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .teamDevs{
   font-family:var(--mono);
-  font-size:10px;
+  font-size:11px;
   color:var(--muted);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   margin-bottom:8px;
@@ -224,7 +237,7 @@
   margin-bottom:6px;
 }
 
-.vlab{font-size:9px; color:var(--muted); margin-top:6px; display:flex; justify-content:space-between;}
+.vlab{font-size:12px; color:var(--muted); margin-top:6px; display:flex; justify-content:space-between;}
 .vlab span{width:50%; text-align:center;}
 .topbar{
   display:flex;
@@ -329,7 +342,7 @@
   font-size:12px;
   color:#334155;
 }
-.radarKpis .k{ opacity:.75; margin-right:6px; }
+.radarKpis .k{ opacity:.90; margin-right:6px; }
 
 
 
@@ -337,19 +350,18 @@
 /* ===== AFINAR Ranking (força override) ===== */
 #rankBoard.rankBoard{ gap:8px !important; }
 
-#rankBoard .teamCol{
-  flex:0 0 96px !important;      /* antes 128px */
-  padding:6px !important;        /* antes 8px */
-  border-radius:12px !important; /* antes 14px */
-}
+
+
+#rankBoard .teamCol{ flex:0 0 84px !important; }
+
 
 #rankBoard .teamName{
-  font-size:10px !important;
+  font-size:11px !important;
   margin-bottom:2px !important;  /* antes 4px */
 }
 
 #rankBoard .teamDevs{
-  font-size:9px !important;
+  font-size:11px !important;
   margin-bottom:6px !important;  /* antes 8px */
 }
 
@@ -359,21 +371,189 @@
 }
 
 #rankBoard .vbarBox{
-  height:72px !important;        /* antes 92px */
-  border-radius:9px !important;  /* antes 10px */
+  height:60px !important;        /* antes 92px */
+  border-radius:6px !important;  /* antes 10px */
 }
 
 #rankBoard .vnum{
-  font-size:11px !important;     /* antes 12px */
+  font-size:12px !important;     /* antes 12px */
   margin-bottom:4px !important;  /* antes 6px */
 }
 
 #rankBoard .vlab{
-  font-size:8px !important;
+  font-size:12px !important;
   margin-top:4px !important;     /* antes 6px */
 }
 
 
+
+
+
+/* ===== Ranking: barras FINAS de verdade (container + badges sem sobrepor) ===== */
+#rankBoard .vbars{
+  display:grid !important;
+  grid-template-columns: 18px 18px !important; /* <-- AQUI afina o container */
+  justify-content:center !important;
+  gap:6px !important;
+  height:72px !important;
+}
+
+#rankBoard .vbarBox{
+  width:18px !important;     /* <-- força a caixa da barra a ser fina */
+  height:72px !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+
+#rankBoard .vbar{
+  left:0 !important;
+  right:0 !important;
+}
+
+/* badge do número menor, sem “invadir” a coluna do lado */
+#rankBoard .vnum{
+  width:14px !important;
+  height:14px !important;
+  padding:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:12px !important;
+  margin-bottom:3px !important;
+  border-radius:999px !important;
+  box-sizing:border-box !important;
+}
+
+/* ===== PATCH: ranking mais estreito + barras mais finas ===== */
+#rankBoard.rankBoard{ gap:8px; }                 /* espaço entre cards (opcional) */
+
+#rankBoard .teamCol{
+  flex: 0 0 110px;                               /* <-- estreita o card (antes 128px) */
+  padding: 6px;                                  /* <-- compacta */
+  border-radius: 12px;
+}
+
+#rankBoard .vbars{
+  display: grid;                                  /* garante que não vai sobrepor */
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;                                       /* <-- espaço entre as 2 barras */
+  height: 84px;                                   /* <-- altura total do miolo */
+}
+
+#rankBoard .vbarBox{
+  height: 84px;                                   /* tem que bater com .vbars */
+  border-radius: 10px;
+  overflow: hidden;                               /* garante que nada “vaza” */
+}
+
+/* AQUI é onde você “afina” a barra de verdade (o azul/cinza) */
+#rankBoard .vbar{
+  left: 10px;                                     /* <-- afina (antes 0) */
+  right: 10px;                                    /* <-- afina (antes 0) */
+  border-radius: 999px 999px 0 0;                 /* opcional, topo arredondado */
+}
+
+#rankBoard .vnum{ font-size: 12px; margin-bottom: 5px; }
+#rankBoard .teamDevs{ margin-bottom: 6px; }
+
+
+.tierRow{display:flex; align-items:center; gap:10px; margin-top:6px}
+.tierTag{min-width:34px; text-align:center; padding:2px 8px; border-radius:999px; border:1px solid var(--line); background:#fff}
+.tierTrack{flex:1; height:10px; background:#eef2ff; border-radius:999px; overflow:hidden}
+.tierFill{height:100%; background:linear-gradient(90deg,#7aa2ff,#4f7dff); border-radius:999px}
+.tierPct{min-width:42px; text-align:right}
+.splitFull{grid-template-columns:1fr !important;}
+
+/* Tooltip: bloco para fórmulas em notação matemática (MathJax) */
+.tooltip .tt-math{
+  margin:8px 0;
+  padding:8px 10px;
+  background:#f6f8fb;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:auto;
+}
+
+/* ===== devs em grade 2x2 dentro do card ===== */
+#rankBoard .teamDevs.devgrid{
+  display:grid !important;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 2px 10px;
+  margin-top:2px;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  font-size:12px !important;
+  line-height:1.15 !important;
+}
+#rankBoard .teamDevs.devgrid .dev{
+  display:block;
+  font-family: ui-monospace;
+}
+
+
+/* ===== ranking sem scroll: vira grid e quebra linha ===== */
+#rankBoard.rankBoard{
+  display:grid !important;
+  gap:10px !important;
+  overflow:visible !important;      /* tira scroll */
+  padding-bottom:0 !important;
+}
+
+/* Desktop: tenta 5 colunas */
+@media(min-width:1200px){
+  #rankBoard.rankBoard{ grid-template-columns: repeat(5, minmax(160px, 1fr)); }
+}
+/* Médio: 3 colunas (vai ficar 3+2) */
+@media(min-width:820px) and (max-width:1199px){
+  #rankBoard.rankBoard{ grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+}
+/* Menor: 2 colunas */
+@media(max-width:819px){
+  #rankBoard.rankBoard{ grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+}
+
+/* Importante: se você tinha isso, DESATIVE (flex fixo) */
+#rankBoard .teamCol{ flex:unset !important; width:auto !important; }
+
+
+
+
+/* ===== Ranking cards: 5 cards visíveis + devs 2x2 ===== */
+#rankBoard.rankBoard{
+  display:grid !important;
+  grid-template-columns:repeat(5, minmax(0,1fr)) !important;
+  gap:10px !important;
+  overflow-x:visible !important;
+  align-items:stretch !important;
+}
+#rankBoard .teamCol{
+  flex:unset !important;
+  width:auto !important;
+  min-width:0 !important;
+}
+#rankBoard .teamName{ font-size:12px !important; }
+
+#rankBoard .teamDevs{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:2px 6px !important;
+  margin-bottom:8px !important;
+  font-size:12px !important;
+  line-height:1.15 !important;
+  color:var(--muted) !important;
+  white-space:normal !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+#rankBoard .teamDevs .dev{
+  display:block;
+  font-family:var(--mono);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
 
   </style>
@@ -407,7 +587,7 @@
       <div id="covBars" class="covRows"></div>
     </div>
 
-    <div class="stripCard" style="flex:1.6">
+    <div class="stripCard" style="flex:2.6">
       <div class="stripTitle">
         <span><b>Ranking</b> por equipe (Expert × BN)</span>
         <span class="mini" id="rankMeta"></span>
@@ -442,6 +622,13 @@
       </div>
     </div>
   </div>
+<!-- MathJax (renderização LaTeX no tooltip) -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
 </header>
 
@@ -486,18 +673,15 @@
         <div class="pill">AE: <span class="mono">WMIN</span> (AT=3, AC=1)</div>
       </div>
       <div class="bd">
-        <div class="split">
+        <div class="split" style="grid-template-columns:1fr">
           <div class="barwrap">
             <div class="barcard">
-              <div class="ttl">
-                <strong>Estrutura visual (estilo BN)</strong>
-                <span class="mini">muda ao trocar a equipe</span>
-              </div>
+              
               <div class="svgbox">
                 <div id="bnGraphWrap">
                   <svg id="bnGraph"
-                      width="1200" height="580"
-                      viewBox="0 0 1850 680"
+                      width="1200" height="440"
+                      viewBox="0 0 1850 280"
                       preserveAspectRatio="xMinYMin meet"
                       aria-label="Rede Bayesiana (com gráficos por nó)">
                   </svg>
@@ -506,7 +690,7 @@
 
               <div class="barcard" style="margin-top:10px">
                 <div class="ttl">
-                  <strong>Radar por equipe (OSF / SLF / Projetos em comum)</strong>
+                  <strong>Radar por equipe (OSF / SLF / nº de projetos em comum)</strong>
                   <span class="mini" id="projMetaRadar"></span>
                 </div>
                 <div id="radarGrid" class="radarGrid"></div>
@@ -521,36 +705,68 @@
 
                 <div class="grid2" style="margin-top:10px">
                   <div class="barcard">
-                    <div class="ttl"><strong>AT</strong><span class="mini" id="projMetaAT">AT (aprox. ou dist_AT)</span></div>
-                    <svg id="projAT" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    <div class="ttl"><strong>AT</strong><span class="mini" id="projMetaAT">AT (dist_AT)</span></div>
+                    <svg id="projAT" width="100%" height="300" viewBox="0 0 760 260"></svg>
                   </div>
                   <div class="barcard">
-                    <div class="ttl"><strong>AC</strong><span class="mini" id="projMetaAC">AC (aprox. ou dist_AC)</span></div>
-                    <svg id="projAC" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    <div class="ttl"><strong>AC</strong><span class="mini" id="projMetaAC">AC (dist_AC)</span></div>
+                    <svg id="projAC" width="100%" height="300" viewBox="0 0 760 260"></svg>
                   </div>
                   <div class="barcard">
                     <div class="ttl"><strong>AE</strong><span class="mini" id="projMetaAE">AE (dist_AE)</span></div>
-                    <svg id="projAE" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    <svg id="projAE" width="100%" height="300" viewBox="0 0 760 260"></svg>
                   </div>
                   <div class="barcard">
-                    <div class="ttl"><strong>Dom / Eco / Ling / PC</strong><span class="mini" id="projMetaTech">Dom/Eco/Ling/PC</span></div>
-                    <svg id="projTech" width="100%" height="340" viewBox="0 0 760 340"></svg>
+                  <div class="ttl"><strong>Dom / Eco / Ling / PC</strong><span class="mini" id="projMetaTech">Dom/Eco/Ling/PC</span></div>
+
+                  <!-- Painéis compactos (3 colunas) -->
+                  <div class="grid2" style="margin-top:10px">
+                    <div class="barcard">
+                      <div class="ttl"><strong>Dom</strong><span class="mini">dist_Dom / Dom_tier</span></div>
+                      <svg id="projDOM" width="100%" height="260" viewBox="0 0 520 260"></svg>
+                    </div>
+                    <div class="barcard">
+                      <div class="ttl"><strong>Eco</strong><span class="mini">dist_Eco / Eco_tier</span></div>
+                      <svg id="projECO" width="100%" height="260" viewBox="0 0 520 260"></svg>
+                    </div>
+                    <div class="barcard">
+                      <div class="ttl"><strong>Ling</strong><span class="mini">dist_Ling / Ling_tier</span></div>
+                      <svg id="projLING" width="100%" height="260" viewBox="0 0 520 260"></svg>
+                    </div>
+
+                    <!-- 4º painel: PC ocupa a linha inteira (pela regra do grid2) -->
+                    <div class="barcard">
+                      <div class="ttl"><strong>PC</strong><span class="mini">dist_PC</span></div>
+                      <svg id="projPC" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    </div>
                   </div>
                 </div>
 
-                <div class="foot">
-                  Dica: para mostrar Dom/Eco/Ling com distribuições reais por equipe, adicione no CSV as colunas
-                  <span class="mono">dist_Dom</span>, <span class="mono">dist_Eco</span>, <span class="mono">dist_Ling</span>.
-                  Para PC, use <span class="mono">dist_PC</span> (5 valores) ou colunas <span class="mono">PC_VL..PC_VH</span>.
                 </div>
-              </div>
+
+
+
+                
+                <div class="barcard">
+                  <div class="ttl">
+                    <strong>Tecnologias alvo </strong>
+                    
+                  </div>
+
+                  <div id="techTargetsText" class="mini" style="margin:-6px 0 6px 0;color:#9fb0c0"></div>
+
+                  <svg id="projTechOcc" width="100%" height="420" viewBox="0 0 760 420"></svg>
+                </div>
+
 
               </div>
 
-              <div class="legend">
+              </div>
+
+              <!--<div class="legend">
                 <div class="leg"><span class="sw" style="background:#7aa2ff"></span>Equipe selecionada</div>
                 <div class="leg"><span class="sw" style="background:#62d26f"></span>Referência / centroides</div>
-              </div>
+              </div>-->
 
               
               <div style="height:10px"></div>
@@ -567,7 +783,7 @@
 
         
 
-        <div class="barcard">
+        <!--<div class="barcard">
           <div class="ttl">
             <strong>3) Tabela de evidências e resultado (linha do CSV)</strong>
             <span class="mini">mostra exatamente o que entrou/saíu</span>
@@ -579,7 +795,7 @@
             Dica: se você quiser incluir Dom/Eco/Ling discretizados (VL..VH) e PC_VL..PC_VH, basta adicionar colunas no CSV.
             O dashboard já está pronto para plugar esses valores nos rótulos do grafo (lado esquerdo).
           </div>
-        </div>
+        </div>-->
 
       </div>
     </section>
@@ -608,9 +824,9 @@ const TOOLTIP_TEMPLATES = {
       `Função: ${DEFAULT_MODEL.AT.func}`,
       `Pesos: Dom=${DEFAULT_MODEL.AT.weights.Dom}, Eco=${DEFAULT_MODEL.AT.weights.Eco}, Ling=${DEFAULT_MODEL.AT.weights.Ling}`,
       "Fórmula:",
-      `S = Σ x_j`,
-      `e_i = (w_i·x_i + (S − x_i)) / (w_i + (n − 1))`,
-      `WMAX = max_i e_i`
+      `\\[ S = \\sum_{j=1}^{n} x_j \\]`,
+      `\\[ e_i = \\frac{w_i x_i + \\sum_{j \\ne i} x_j}{w_i + (n-1)} \\]`,
+      `\\[ \\mathrm{WMAX}(x,w) = \\max_i e_i \\]`
     ],
     note: "Aqui, x_i é o score (0–1) de Dom/Eco/Ling. Se x_i vier como vetor (amostras), o max é posição a posição."
   }),
@@ -620,9 +836,10 @@ const TOOLTIP_TEMPLATES = {
       `Função: ${DEFAULT_MODEL.AC.func}`,
       `Pesos: PC_VL=${DEFAULT_MODEL.AC.weights.PC_VL}, PC_L=${DEFAULT_MODEL.AC.weights.PC_L}, PC_M=${DEFAULT_MODEL.AC.weights.PC_M}, PC_H=${DEFAULT_MODEL.AC.weights.PC_H}, PC_VH=${DEFAULT_MODEL.AC.weights.PC_VH}`,
       "Fórmula:",
-      `S = Σ x_j`,
-      `e_i = (w_i·x_i + (S − x_i)) / (w_i + (n − 1))`,
-      `WMAX = max_i e_i`
+      `\\[ S = \\sum_{j=1}^{n} x_j \\]`,
+      `\\[ e_i = \\frac{w_i x_i + \\sum_{j \\ne i} x_j}{w_i + (n-1)} \\]`,
+      `\\[ \\mathrm{WMAX}(x,w) = \\max_i e_i \\]`
+
     ],
     note: "Aqui, x_i vem da evidência de colaboração (ex.: PC_VL..PC_VH, ou depois sua transformação para valor 0–1)."
   }),
@@ -632,9 +849,9 @@ const TOOLTIP_TEMPLATES = {
       `Função: ${DEFAULT_MODEL.AE.func}`,
       `Pesos: AT=${DEFAULT_MODEL.AE.weights.AT}, AC=${DEFAULT_MODEL.AE.weights.AC}`,
       "Fórmula:",
-      `S = Σ x_j`,
-      `e_i = (w_i·x_i + (S − x_i)) / (w_i + (n − 1))`,
-      `WMIN = min_i e_i`
+       `\\[ S = \\sum_{j=1}^{n} x_j \\]`,
+      `\\[ e_i = \\frac{w_i\\,x_i + (S - x_i)}{w_i + (n - 1)} \\]`,
+      `\\[ \\mathrm{WMIN}(x,w) = \\min_i e_i \\]`
     ],
     note: "Aqui, x_i são os valores contínuos de AT e AC (0–1)."
   })
@@ -646,12 +863,18 @@ function tooltipHtml(t){
     .replaceAll(">","&gt;").replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
   const lines = (t.lines||[]).map(l=>{
-    // linhas de fórmula e pesos em monoespaçado
-    if (l.includes("=") || l.includes("WMAX") || l.includes("WMIN") || l.includes("e_i") || l.includes("Σ") || l.includes("·") || l.includes("−")){
+    // Fórmulas em LaTeX (MathJax): use \( ... \) ou \[ ... \]
+    const isMath = (typeof l === "string") && (l.startsWith("\\(") || l.startsWith("\\["));
+    if (isMath){
+      return `<div class="tt-math">${l}</div>`;
+    }
+    // linhas de pesos/detalhes em monoespaçado
+    if (l.includes("=") || l.includes("WMAX") || l.includes("WMIN") || l.includes("e_i")){
       return `<div class="tt-mono">${esc(l)}</div>`;
     }
     return `<div>${esc(l)}</div>`;
   }).join("");
+
   return `<div class="tt-title">${esc(t.title||"")}</div>${lines}${t.note?`<div class="tt-muted">${esc(t.note)}</div>`:""}`;
 }
 
@@ -666,6 +889,9 @@ function attachNodeTooltips(){
       const builder = TOOLTIP_TEMPLATES[id];
       if (!builder) return;
       tip.innerHTML = tooltipHtml(builder());
+      // renderiza LaTeX no tooltip (se MathJax estiver carregado)
+      if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([tip]);
+
       tip.style.display = "block";
     });
     el.addEventListener("mousemove", (ev)=>{
@@ -906,6 +1132,19 @@ function svgClear(svg){
   if (!svg) return;
   while (svg.firstChild) svg.removeChild(svg.firstChild);
 }
+function syncViewBox(svg, fallbackW=760, fallbackH=260){
+  if(!svg) return {W:fallbackW,H:fallbackH};
+  const r = (typeof svg.getBoundingClientRect === "function") ? svg.getBoundingClientRect() : null;
+  const w = r && r.width ? Math.round(r.width) : 0;
+  const h = r && r.height ? Math.round(r.height) : 0;
+  const W = (w >= 10) ? Math.max(320, w) : fallbackW;
+  const H = (h >= 10) ? Math.max(200, h) : fallbackH;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  // evita “meet” (que reduz e cria área vazia quando o SVG está em 3 colunas)
+  svg.setAttribute("preserveAspectRatio","none");
+  return {W,H};
+}
+
 function svgEl(name, attrs={}){
   const el = document.createElementNS("http://www.w3.org/2000/svg", name);
   for (const [k,v] of Object.entries(attrs)) el.setAttribute(k, v);
@@ -1038,7 +1277,7 @@ function drawNodeWithBars(svg, {x,y,w,h,title,dist, funcLabel=null, weightsLabel
     }
     g.appendChild(f);
 
-    const wtxt = svgEl("text",{x:fx + 58,y:fy,fill:"#4b5563","font-size":"20","font-family":"ui-monospace"});
+    const wtxt = svgEl("text",{x:fx + 80,y:fy,fill:"#4b5563","font-size":"20","font-family":"ui-monospace"});
     wtxt.textContent = weightsLabel || "";
     g.appendChild(wtxt);
   }
@@ -1132,14 +1371,44 @@ function renderBNGraph(row, dists){
 
 
   //mudar tamanho das caixas dos graficos
-  const smallW = 380, smallH = 180;
-  const boxW = 420, boxH = 240;
+  const smallW = 380, smallH = 50;
+  const boxW = 500, boxH = 240;
   const boxW_AT = 600
+  const TIER = ["VL","L","M","H","VH"];
 
 
-  const dom = drawNodeWithBars(svg,{x:50,y:40,w:smallW,h:smallH,title:"Domínio (Dom)",dist:dists.dom, metaLabel:dists.metaDom});
-  const eco = drawNodeWithBars(svg,{x:50,y:190,w:smallW,h:smallH,title:"Ecossistema (Eco)",dist:dists.eco, metaLabel:dists.metaEco});
-  const ling= drawNodeWithBars(svg,{x:50,y:340,w:smallW,h:smallH,title:"Linguagens (Ling)",dist:dists.ling, metaLabel:dists.metaLing});
+  function compactNonZero(dist){
+    const pairs = TIER.map((lab,i)=>({lab, v:Number(dist?.[i] ?? 0)}))
+                    .filter(p => p.v > 1e-9);
+    return pairs.length
+      ? { dist: pairs.map(p=>p.v), labels: pairs.map(p=>p.lab) }
+      : { dist: [0], labels: ["—"] };
+  }
+
+  const domC  = compactNonZero(dists.dom);
+  const ecoC  = compactNonZero(dists.eco);
+  const lingC = compactNonZero(dists.ling);
+
+  // e agora desenhe assim:
+  const dom = drawNodeWithBars(svg,{
+    x:50,y:0,w:smallW,h:smallH,title:"Domínio",
+    dist: domC.dist, barLabels: domC.labels, maxValue: 1,
+    metaLabel: dists.metaDom
+  });
+  const eco = drawNodeWithBars(svg,{
+    x:50,y:60,w:smallW,h:smallH,title:"Ecossistema",
+    dist: ecoC.dist, barLabels: ecoC.labels, maxValue: 1,
+    metaLabel: dists.metaEco
+  });
+  const ling= drawNodeWithBars(svg,{
+    x:50,y:120,w:smallW,h:smallH,title:"Linguagens ",
+    dist: lingC.dist, barLabels: lingC.labels, maxValue: 1,
+    metaLabel: dists.metaLing
+  });
+
+  //const dom = drawNodeWithBars(svg,{x:50,y:40,w:smallW,h:smallH,title:"Domínio (Dom)",dist:dists.dom, metaLabel:dists.metaDom});
+  //const eco = drawNodeWithBars(svg,{x:50,y:190,w:smallW,h:smallH,title:"Ecossistema (Eco)",dist:dists.eco, metaLabel:dists.metaEco});
+  //const ling= drawNodeWithBars(svg,{x:50,y:340,w:smallW,h:smallH,title:"Linguagens (Ling)",dist:dists.ling, metaLabel:dists.metaLing});
   // PC evidence as five nodes: PC_VL..PC_VH (each mapped to VL..VH states)
   
   const pcTitles = ["PC_VL","PC_L","PC_M","PC_H","PC_VH"];
@@ -1171,19 +1440,19 @@ function renderBNGraph(row, dists){
   
 
 
-  const at  = drawNodeWithBars(svg,{x:650,y:250,w:boxW,h:boxH,title:"AT (Technological Fit)",dist:dists.at,
+  const at  = drawNodeWithBars(svg,{x:650,y:0,w:boxW,h:boxH,title:"AT (Aptidão Tecnológica)",dist:dists.at,
     funcLabel: DEFAULT_MODEL.AT.func,
     weightsLabel:`(Dom=${DEFAULT_MODEL.AT.weights.Dom}, Eco=${DEFAULT_MODEL.AT.weights.Eco}, Ling=${DEFAULT_MODEL.AT.weights.Ling})`,
     tooltipId: "TT_AT"// DEFAULT_MODEL.AT.func === "WMAX" ? "TT_WMAX" : "TT_WMIN"
   });
 
-  const ac  = drawNodeWithBars(svg,{x:650,y:500,w:boxW,h:boxH,title:"AC (Collaboration Fit)",dist:dists.ac,
+  const ac  = drawNodeWithBars(svg,{x:650,y:240,w:boxW,h:boxH,title:"AC (Aptidão Colaborativa)",dist:dists.ac,
     funcLabel: DEFAULT_MODEL.AC.func,
     weightsLabel:`(PC_VL=${DEFAULT_MODEL.AC.weights.PC_VL}, PC_L=${DEFAULT_MODEL.AC.weights.PC_L}, PC_M=${DEFAULT_MODEL.AC.weights.PC_M}, PC_H=${DEFAULT_MODEL.AC.weights.PC_H}, PC_VH=${DEFAULT_MODEL.AC.weights.PC_VH})`,
     tooltipId: "TT_AC" //DEFAULT_MODEL.AC.func === "WMAX" ? "TT_WMAX" : "TT_WMIN"
   });
 
-  const ae  = drawNodeWithBars(svg,{x:1180,y:400,w:boxW,h:boxH,title:"AE (Team Fit)",dist:dists.ae,
+  const ae  = drawNodeWithBars(svg,{x:1280,y:125,w:boxW,h:boxH,title:"AE (Aptidão da Equipe)",dist:dists.ae,
     funcLabel: DEFAULT_MODEL.AE.func,
     weightsLabel:`(AT=${DEFAULT_MODEL.AE.weights.AT}, AC=${DEFAULT_MODEL.AE.weights.AC})`,
     tooltipId:"TT_AE" // DEFAULT_MODEL.AE.func === "WMAX" ? "TT_WMAX" : "TT_WMIN"
@@ -1207,6 +1476,25 @@ function renderBNGraph(row, dists){
   // re-bind tooltips for new SVG text nodes
   attachNodeTooltips();
 }
+function renderTierOnly(el, title, tier, score){
+  const s = Number(score);
+  const sc = Number.isFinite(s) ? Math.max(0, Math.min(1, s)) : 0;
+  const pct = Math.round(sc * 100);
+
+  el.innerHTML = `
+    <div class="mini">${title}</div>
+    <div class="tierRow">
+      <span class="tierTag mono">${tier || "-"}</span>
+
+      <div class="tierTrack" title="${pct}% (${sc.toFixed(3)})">
+        <div class="tierFill" style="width:${pct}%"></div>
+      </div>
+
+      <span class="tierPct mono">${pct}%</span>
+    </div>
+  `;
+}
+
 
 function drawAxis(svg, atVal, acVal, color="#7aa2ff"){
   if(!svg) return;
@@ -1283,6 +1571,8 @@ function currentRow(){
 
 function renderRowTable(row){
   const table = $("rowTable");
+  if (!table) return; // PATCH: evita crash quando a tabela está removida/comentada
+
   if (!row){
     table.innerHTML = "<tr><td style='color:#9fb0c0'>— sem dados —</td></tr>";
     return;
@@ -1297,6 +1587,7 @@ function renderRowTable(row){
   html += "</tbody>";
   table.innerHTML = html;
 }
+
 
 function escapeHtml(s){
   return String(s)
@@ -1325,8 +1616,37 @@ function shortDevs(teamStr){
   if (!s) return "";
   const parts = s.split(/[;,\s]+/).map(x=>x.trim()).filter(Boolean);
   if (!parts.length) return "";
-  const shown = parts.slice(0,3).join(" · ");
+  const shown = parts.slice(0,4).join(" · ");
   return parts.length>3 ? `${shown} · …` : shown;
+}
+function normalizeDevs(teamStr){
+  const s = String(teamStr ?? "").replace(/[\[\]]/g,"").trim();
+  if (!s) return [];
+  return s.split(/[;,\n]+/).map(x=>x.trim()).filter(Boolean);
+}
+function devTitleStr(teamStr){
+  const parts = normalizeDevs(teamStr).slice(0,4);
+  return parts.join(" · ");
+}
+function devCellsHtml(teamStr){
+  const parts = normalizeDevs(teamStr).slice(0,4);
+  while (parts.length < 4) parts.push("—"); // mantém o grid 2x2 alinhado
+  return parts.map(d=>`<span class="dev" title="${escapeHtml(d)}">${escapeHtml(d)}</span>`).join("");
+}
+
+
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+
+function devsGridHtml(teamStr){
+  const s = String(teamStr ?? "").replace(/[\[\]]/g,"").trim();
+  if (!s) return "";
+  const parts = s.split(/[;,\s]+/).map(x=>x.trim()).filter(Boolean).slice(0,4);
+  return parts.map(d => `<span class="dev">${escapeHtml(d)}</span>`).join("");
 }
 
 function renderCoveragePanel(row, label=""){
@@ -1448,7 +1768,8 @@ function renderProjectRankBoard(projectId, selectedRow){
 
   board.innerHTML = ordered.map(r=>{
     const t = teamKey(r);
-    const devs = shortDevs(r.team_str);
+    const devTitle = devTitleStr(r.team_str);
+    const devCells = devCellsHtml(r.team_str);
 
     const re = safeParseFloat(r.rank_expert);
     const rb = safeParseFloat(r.rank_bn);
@@ -1461,7 +1782,8 @@ function renderProjectRankBoard(projectId, selectedRow){
     return `
       <div class="teamCol ${active}" data-team="${escapeHtml(t)}">
         <div class="teamName" title="${escapeHtml(t)}">${escapeHtml(t)}</div>
-        <div class="teamDevs" title="${escapeHtml(devs)}">${escapeHtml(devs || "—")}</div>
+        
+        <div class="teamDevs" title="${escapeHtml(devTitle || "—")}">${devCells}</div>
 
         <div class="vbars">
           <div class="vbarBox" title="Ranking do expert (1 = melhor)">
@@ -1816,54 +2138,125 @@ function buildDistForRow(row){
 function drawProjectGrouped(svg, teams){
   if (!svg) return;
   svgClear(svg);
-  const vb = (svg.getAttribute("viewBox")||"0 0 760 220").split(" ").map(Number);
-  const W = vb[2], H = vb[3];
 
-  const padL=110, padR=18, padT=18, padB=34;
+  const {W,H} = syncViewBox(svg, 760, 260);
+
+  // Mais compacto (e evita texto sobreposto quando as barras ficam finas)
+  const padL=66, padR=16, padT=18, padB=28;
   const innerW=W-padL-padR, innerH=H-padT-padB;
 
   const tiers=["VL","L","M","H","VH"];
   const rowH = innerH/tiers.length;
-  const k = teams.length || 1;
-  const barH = Math.max(8, (rowH-8)/Math.max(1,k));
-  const maxVal = Math.max(0.001, ...teams.flatMap(t=>t.dist));
 
-  // grid + labels
+  const k = Math.max(1, teams.length || 1);
+  const barH = Math.max(7, (rowH-6)/k);
+
+  // Escala ABSOLUTA 0..100% (não “estica” quando o máximo é < 1)
+  const maxVal = 1.0;
+
+  // fontes dinâmicas (pra não “invadir” quando barH fica pequeno)
+  const tierFont = clamp(rowH*0.45, 10, 15);
+  const pctFont  = clamp(barH*1.15, 9, 12);
+  const legendFont = 11;
+
+  // grade + rótulos de faixa
   for (let r=0;r<tiers.length;r++){
-    const y = padT + r*rowH + rowH/2 + 4;
-    const lab = svgEl("text",{x:padL-10,y,"text-anchor":"end",fill:"#4b5563","font-size":"20","font-family":"ui-monospace"});
+    const yMid = padT + r*rowH + rowH/2;
+
+    const lab = svgEl("text",{
+      x:padL-10, y:yMid,
+      "text-anchor":"end",
+      "dominant-baseline":"middle",
+      fill:"#4b5563",
+      "font-size": tierFont,
+      "font-family":"ui-monospace"
+    });
     lab.textContent = tiers[r];
     svg.appendChild(lab);
-    svg.appendChild(svgEl("line",{x1:padL,y1:padT+r*rowH,x2:W-padR,y2:padT+r*rowH,stroke:"#eef2f7"}));
+
+    svg.appendChild(svgEl("line",{
+      x1:padL, y1:padT+r*rowH,
+      x2:W-padR, y2:padT+r*rowH,
+      stroke:"#eef2f7"
+    }));
   }
   svg.appendChild(svgEl("line",{x1:padL,y1:padT+innerH,x2:W-padR,y2:padT+innerH,stroke:"#d7dde6"}));
 
+  // barras (por faixa, com uma barra por equipe)
   for (let r=0;r<tiers.length;r++){
     for (let i=0;i<k;i++){
-      const v = teams[i].dist[r] || 0;
-      const bw = (v/maxVal) * innerW;
+      const t = teams[i] || {};
+      const v = (t.dist && Number.isFinite(t.dist[r])) ? t.dist[r] : 0;
+      const bw = clamp(v/maxVal, 0, 1) * innerW;
+
       const x = padL;
-      const y = padT + r*rowH + i*barH + 2;
-      svg.appendChild(svgEl("rect",{x,y,width:bw,height:barH-2,rx:"6",ry:"6",fill:teams[i].color,opacity:"0.95"}));
-      if (bw>52){
-        const txt = svgEl("text",{x:x+bw-6,y:y+barH-6,"text-anchor":"end",fill:"#0b1220","font-size":"20","font-family":"ui-monospace"});
-        txt.textContent = (v*100).toFixed(0)+"%";
-        svg.appendChild(txt);
-      }
+      const y = padT + r*rowH + i*barH + 1;
+
+      svg.appendChild(svgEl("rect",{
+        x, y,
+        width: bw,
+        height: Math.max(1, barH-1),
+        rx:"5", ry:"5",
+        fill: t.color || "#94a3b8",
+        opacity:"0.95"
+      }));
+
+      // rótulo de %: dentro se couber, senão fora (pra não sobrepor)
+      const pct = (v*100).toFixed(0) + "%";
+      const inside = bw >= 28;
+      const tx = inside ? (x + bw - 4) : (x + bw + 4);
+      const ta = inside ? "end" : "start";
+      const fc = inside ? "#0b1220" : "#4b5563";
+
+      const txt = svgEl("text",{
+        x: tx,
+        y: y + (barH-1)/2,
+        "text-anchor": ta,
+        "dominant-baseline":"middle",
+        fill: fc,
+        "font-size": pctFont,
+        "font-family":"ui-monospace"
+      });
+      txt.textContent = pct;
+      svg.appendChild(txt);
     }
   }
 
-  // legend
+  // legenda (embaixo)
+  // legenda (embaixo) — com wrap (quebra linha quando não cabe)
   let cursor = padL;
-  const ly = H-12;
+  let ly = H - 10;
+  const lineH = 14;
+
   teams.forEach((t)=>{
-    svg.appendChild(svgEl("rect",{x:cursor,y:ly-10,width:10,height:10,rx:"2",ry:"2",fill:t.color}));
-    const tt = svgEl("text",{x:cursor+14,y:ly-1,fill:"#4b5563","font-size":"20","font-family":"ui-monospace"});
-    tt.textContent = t.label;
+    const label = String(t.label || "");
+    const est = 13 + (label.length * 6) + 18; // largura estimada do item
+
+    // se não cabe, quebra para a linha de cima
+    if (cursor + est > W - padR){
+      cursor = padL;
+      ly -= lineH;
+    }
+
+    svg.appendChild(svgEl("rect",{
+      x: cursor, y: ly-9, width: 9, height: 9, rx:"2", ry:"2",
+      fill: t.color || "#94a3b8"
+    }));
+
+    const tt = svgEl("text",{
+      x: cursor+13, y: ly-1,
+      fill:"#4b5563",
+      "font-size": legendFont,
+      "font-family":"ui-monospace"
+    });
+    tt.textContent = label;
     svg.appendChild(tt);
-    cursor += 14 + (t.label.length*7) + 18;
+
+    cursor += est;
   });
+
 }
+
 
 function drawProjectGroupedIntoGroup(g, W, H, teams, label){
   const padL=90, padR=16, padT=22, padB=6;
@@ -2016,7 +2409,7 @@ function drawRadar(svg, values, labels, color){
     const p = pt(i, v);
     poly.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
   }
-  svg.appendChild(svgEl("polygon", { points: poly.join(" "), fill: color, opacity:"0.22", stroke: color, "stroke-width":"2" }));
+  svg.appendChild(svgEl("polygon", { points: poly.join(" "), fill: color, opacity:"0.5", stroke: color, "stroke-width":"2" }));
 
   // vertices
   for (let i=0; i<N; i++){
@@ -2026,6 +2419,9 @@ function drawRadar(svg, values, labels, color){
   }
   svg.appendChild(svgEl("circle", { cx, cy, r:"2.2", fill:"#0b1220" }));
 }
+renderTierOnly(domContainer, "Domínio (DOM)", row.dominio_tier, row.dominio_score);
+renderTierOnly(ecoContainer, "Ecossistema (ECO)", row.ecossistema_tier, row.ecossistema_score);
+renderTierOnly(lingContainer,"Linguagens (LING)", row.linguagens_tier, row.linguagens_score);
 
 function renderProjectRadars(projectId, orderedRows){
   const grid = $("radarGrid");
@@ -2122,7 +2518,13 @@ function renderProjectComparison(projectId){
   drawProjectGrouped($("projAC"), teams.map(t=>({label:t.label,color:t.color,dist:t.distAC})));
   drawProjectGrouped($("projAE"), teams.map(t=>({label:t.label,color:t.color,dist:t.distAE})));
 
+  
+
   renderProjectTech(projectId, teams);
+  renderProjectTechOcc(projectId, teams);
+
+
+
 }
 
 function renderProjectTech(projectId, teamsPrebuilt=null){
@@ -2135,6 +2537,15 @@ function renderProjectTech(projectId, teamsPrebuilt=null){
     const d = buildDistForRow(r);
     return {label,color,...d};
   });
+  // Se existir a versão em painéis (Dom/Eco/Ling/PC separados), usa ela
+  const domEl = $("projDOM"), ecoEl = $("projECO"), lingEl = $("projLING"), pcEl = $("projPC");
+  if (domEl && ecoEl && lingEl){
+    drawProjectGrouped(domEl, teams.map(t=>({label:t.label,color:t.color,dist:t.distDom})));
+    drawProjectGrouped(ecoEl, teams.map(t=>({label:t.label,color:t.color,dist:t.distEco})));
+    drawProjectGrouped(lingEl, teams.map(t=>({label:t.label,color:t.color,dist:t.distLing})));
+    if (pcEl) drawProjectGrouped(pcEl, teams.map(t=>({label:t.label,color:t.color,dist:t.distPC})));
+    return;
+  }
 
   const svg = $("projTech");
   if (!svg) return;
@@ -2170,6 +2581,328 @@ function renderProjectTech(projectId, teamsPrebuilt=null){
     cursor += 14 + (t.label.length*7) + 16;
   });
 }
+function renderProjectTechOcc(projectId, teams){
+  const svg  = $("projTechOcc");
+  const txt  = $("techTargetsText");
+  const meta = $("projMetaTechOcc");
+  if(!svg) return;
+
+  svgClear(svg);
+
+  if(!teams || !teams.length){
+    if(meta) meta.textContent = "sem equipes";
+    if(txt) txt.textContent = "";
+    return;
+  }
+
+  const dims = [
+    {prefix:"dominio",     label:"DOM"},
+    {prefix:"ecossistema", label:"ECO"},
+    {prefix:"linguagens",  label:"LING"},
+  ];
+  const kinds = [
+    {k:"m", label:"M"},
+    {k:"s", label:"S"},
+    {k:"c", label:"C"},
+  ];
+
+  const anyCol = (p,k) => teams.some(t=>{
+    const r = t.row || {};
+    return (r[`${p}_${k}_covered_list`] !== undefined) || (r[`${p}_${k}_covered`] !== undefined);
+  });
+  const hasAny = dims.some(d => kinds.some(kk => anyCol(d.prefix, kk.k)));
+
+  if(!hasAny){
+    if(meta) meta.textContent = "Sem colunas *_covered_list no CSV.";
+    if(txt) txt.textContent = "";
+    const msg = svgEl("text",{x:20,y:40,fill:"#9fb0c0","font-size":"22","font-family":"ui-monospace"});
+    msg.textContent = "Sem dados de tecnologias (adicione colunas *_covered_list no CSV).";
+    svg.appendChild(msg);
+    return;
+  }
+
+  // ===== pega listas alvo (se existirem) ou faz fallback pelo union do que apareceu nas Top-5
+  const src = [
+    getDetailsForRow(teams[0].row),
+    teams[0].row, teams[1]?.row, teams[2]?.row
+  ].filter(Boolean);
+
+  function pickTargetList(srcObjs, prefix, kind){
+    const candidates = [
+      `${prefix}_${kind}_list`,
+      `${prefix}_${kind}_target_list`,
+      `${prefix}_${kind}_req_list`,
+      `${prefix}_${kind}_required_list`,
+      `${prefix}_${kind}_techs`,
+      `${prefix}_${kind}_targets`,
+    ];
+    for(const obj of srcObjs){
+      for(const c of candidates){
+        const L = normalizeList(obj?.[c]);
+        if(L.length) return L;
+      }
+    }
+
+    // fallback: usa o que apareceu nas Top-5 (não mostra alvos 0/5 se ninguém cobriu)
+    const out = new Set();
+    for(const t of teams){
+      const r = t.row || {};
+      const total = safeInt(r[`${prefix}_${kind}_total`]);
+      const list  = normalizeList(r[`${prefix}_${kind}_covered_list`]);
+      const base  = total > 0 ? list.slice(0, Math.min(total, list.length)) : list;
+      base.forEach(x => out.add(x));
+    }
+    return Array.from(out);
+  }
+
+  const targetsByDim = {};
+  dims.forEach(d=>{
+    targetsByDim[d.prefix] = {};
+    kinds.forEach(kk=>{
+      targetsByDim[d.prefix][kk.k] = pickTargetList(src, d.prefix, kk.k);
+    });
+  });
+
+  // texto “DOM M[...] S[...] C[...] | ECO ...”
+  if(txt){
+    const fmtList = (arr)=> (arr && arr.length) ? arr.join(", ") : "—";
+    const parts = dims.map(d=>{
+      const m = targetsByDim[d.prefix].m;
+      const s = targetsByDim[d.prefix].s;
+      const c = targetsByDim[d.prefix].c;
+      return `${d.label}  M[${fmtList(m)}]  S[${fmtList(s)}]  C[${fmtList(c)}]`;
+    });
+    txt.textContent = parts.join("   |   ");
+  }
+
+  function normKey(x){ return String(x||"").trim().toLowerCase(); }
+
+  // itens por dimensão
+  const itemsByDim = dims.map(d=>{
+    const itemMap = new Map();
+    const tierRank = {M:3,S:2,C:1};
+
+    kinds.forEach(kk=>{
+      (targetsByDim[d.prefix][kk.k] || []).forEach(name=>{
+        const key = normKey(name);
+        if(!key) return;
+        if(!itemMap.has(key)){
+          itemMap.set(key, {name:String(name).trim(), tier:kk.label, teamIdxs:new Set()});
+        } else {
+          const it = itemMap.get(key);
+          if(tierRank[kk.label] > tierRank[it.tier]) it.tier = kk.label;
+        }
+      });
+    });
+
+    for(const [key,it] of itemMap){
+      teams.forEach((t, idx)=>{
+        const r = t.row || {};
+        let hit = false;
+        for(const kk of kinds){
+          const L = normalizeList(r[`${d.prefix}_${kk.k}_covered_list`]);
+          if(L.some(x => normKey(x) === key)){ hit = true; break; }
+        }
+        if(hit) it.teamIdxs.add(idx);
+      });
+    }
+
+    const arr = Array.from(itemMap.values()).map(it=>({
+      ...it,
+      teamIdxs: Array.from(it.teamIdxs),
+      count: it.teamIdxs.size
+    }));
+    arr.sort((a,b)=> (b.count-a.count) || a.name.localeCompare(b.name));
+    return {dim:d, items:arr};
+  });
+
+  // ===== desenhar (layout profissional): 3 colunas (M/S/C) por linha (DOM/ECO/LING),
+  // bolha com anel segmentado por equipe + sombra suave.
+  const {W,H} = syncViewBox(svg, 760, 340);
+  // defs (shadow)
+  const defs = svgEl("defs",{});
+  const flt = svgEl("filter",{id:"shadowSoft",x:"-20%",y:"-20%",width:"140%",height:"140%"});
+  flt.appendChild(svgEl("feDropShadow",{dx:"0",dy:"1.2",stdDeviation:"1.6","flood-color":"#000","flood-opacity":"0.10"}));
+  defs.appendChild(flt);
+  svg.appendChild(defs);
+
+  const padL=78, padR=14, padT=14, padB=52;
+  const rowGap=16;
+  const colGap=12;
+
+  const rowH = (H - padT - padB - rowGap*2) / 3;
+  const colW = (W - padL - padR - colGap*2) / 3;
+
+  const tierOrder = ["M","S","C"];
+  const tierTitle = {M:"Must (M)", S:"Should (S)", C:"Could (C)"};
+
+  const maxCount = Math.max(1, ...itemsByDim.flatMap(g=>g.items.map(it=>it.count)));
+
+  function rForCount(c){
+    const rMax = Math.min(34, rowH*0.22);
+    const rMin = Math.min(18, rMax-6);
+    if(maxCount<=1) return rMin;
+    return rMin + (c-1)/(maxCount-1)*(rMax-rMin);
+  }
+  function shortLabel(s, n=14){
+    const t = String(s||"");
+    return (t.length<=n) ? t : (t.slice(0, n-1) + "…");
+  }
+  function arcPath(cx,cy,r,a0,a1){
+    const x0 = cx + r*Math.cos(a0), y0 = cy + r*Math.sin(a0);
+    const x1 = cx + r*Math.cos(a1), y1 = cy + r*Math.sin(a1);
+    const large = ((a1-a0) % (Math.PI*2)) > Math.PI ? 1 : 0;
+    return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`;
+  }
+
+  // header de colunas
+  tierOrder.forEach((T, ci)=>{
+    const x = padL + ci*(colW+colGap);
+    const y = padT;
+
+    const bg = svgEl("rect",{x, y, width:colW, height:26, rx:10, ry:10, fill:"#f3f6fb", stroke:"#e5e7eb"});
+    svg.appendChild(bg);
+
+    const tt = svgEl("text",{x:x+10,y:y+18,fill:"#334155","font-size":"14","font-weight":"800","font-family":"ui-sans-serif"});
+    tt.textContent = tierTitle[T];
+    svg.appendChild(tt);
+  });
+
+  // linhas DOM/ECO/LING
+  itemsByDim.forEach((g, ri)=>{
+    const y0 = padT + 32 + ri*(rowH + rowGap);
+
+    // título da dimensão
+    const dlab = svgEl("text",{x:16,y:y0+18,fill:"#0b1220","font-size":"22","font-weight":"900","font-family":"ui-sans-serif"});
+    dlab.textContent = g.dim.label;
+    svg.appendChild(dlab);
+
+    // separador horizontal suave
+    if(ri>0){
+      svg.appendChild(svgEl("line",{x1:12,y1:y0-10,x2:W-12,y2:y0-10,stroke:"#eef2f7"}));
+    }
+
+    tierOrder.forEach((T, ci)=>{
+      const x = padL + ci*(colW+colGap);
+      const y = y0;
+
+      // card do tier
+      const card = svgEl("rect",{x, y, width:colW, height:rowH, rx:14, ry:14, fill:"#ffffff", stroke:"#e5e7eb"});
+      svg.appendChild(card);
+
+      // área interna
+      const insetX = x + 12;
+      const insetY = y + 14;
+      const innerW = colW - 24;
+      const innerH = rowH - 24;
+
+      // itens desse tier
+      const items = (g.items || []).filter(it=>it.tier===T);
+
+      // flow layout
+      let cx = insetX;
+      let cy = insetY;
+      let lineH = 0;
+
+      items.forEach((it)=>{
+        const r = rForCount(it.count);
+        const needW = Math.max(2*r + 18, 86);
+        const needH = 2*r + 30;
+
+        if(cx + needW > insetX + innerW){
+          cx = insetX;
+          cy += lineH + 10;
+          lineH = 0;
+        }
+        if(cy + needH > insetY + innerH){
+          // se estourar, para de desenhar (evita bagunça visual)
+          return;
+        }
+
+        const bx = cx + r;
+        const by = cy + r;
+
+        const gg = svgEl("g",{});
+        const tip = svgEl("title",{});
+        const teamNames = it.teamIdxs.map(i=>teams[i]?.label).filter(Boolean).join(", ");
+        tip.textContent = `${it.name} | ${it.count}/${teams.length} equipes: ${teamNames || "—"}`;
+        gg.appendChild(tip);
+
+        // bolha base + sombra
+        gg.appendChild(svgEl("circle",{
+          cx:bx, cy:by, r,
+          fill:"#fbfdff",
+          stroke:"#cbd5e1",
+          "stroke-width":"1.5",
+          filter:"url(#shadowSoft)"
+        }));
+
+        // anel “slots” (um slot por equipe)
+        const ringR = r + 4;
+        gg.appendChild(svgEl("circle",{cx:bx,cy:by,r:ringR,fill:"none",stroke:"#e5e7eb","stroke-width":"6"}));
+
+        const k = teams.length;
+        const seg = (Math.PI*2) / Math.max(1,k);
+        const gap = seg*0.18;
+        for(let i=0;i<k;i++){
+          if(!it.teamIdxs.includes(i)) continue;
+          const a0 = -Math.PI/2 + i*seg + gap;
+          const a1 = -Math.PI/2 + (i+1)*seg - gap;
+          gg.appendChild(svgEl("path",{
+            d: arcPath(bx,by,ringR,a0,a1),
+            fill:"none",
+            stroke: (teams[i]?.color || "#999"),
+            "stroke-width":"6",
+            "stroke-linecap":"round"
+          }));
+        }
+
+        // contagem no centro
+        const cTxt = svgEl("text",{
+          x:bx,y:by+7,
+          "text-anchor":"middle",
+          fill:"#0b1220",
+          "font-size": Math.max(16, r*1.05),
+          "font-weight":"900",
+          "font-family":"ui-sans-serif"
+        });
+        cTxt.textContent = String(it.count);
+        gg.appendChild(cTxt);
+
+        // label abaixo
+        const lab = svgEl("text",{
+          x:bx,y:by + r + 18,
+          "text-anchor":"middle",
+          fill:"#475569",
+          "font-size":"13",
+          "font-weight":"700",
+          "font-family":"ui-sans-serif"
+        });
+        lab.textContent = shortLabel(it.name, 16);
+        gg.appendChild(lab);
+
+        svg.appendChild(gg);
+
+        cx += needW;
+        lineH = Math.max(lineH, needH);
+      });
+    });
+  });
+
+  // legenda das equipes
+  let lx = padL;
+  const ly = H - 18;
+  teams.forEach((t)=>{
+    svg.appendChild(svgEl("rect",{x:lx,y:ly-10,width:12,height:12,rx:"3",ry:"3",fill:t.color,stroke:"#0b1220","stroke-width":"0.4"}));
+    const tx = svgEl("text",{x:lx+16,y:ly,fill:"#475569","font-size":"14","font-weight":"800","font-family":"ui-sans-serif"});
+    tx.textContent = t.label;
+    svg.appendChild(tx);
+    lx += 16 + (t.label.length*7) + 18;
+  });
+
+  
+}
+
 
 </script>
 </body>
