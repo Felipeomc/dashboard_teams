@@ -555,6 +555,12 @@
   text-overflow:ellipsis;
 }
 
+/* ===== 4 gráficos (2x2) ===== */
+.gridTrade{display:grid; gap:10px;}
+@media(min-width:980px){
+  .gridTrade{grid-template-columns: 1fr 1fr;}
+}
+
 
   </style>
 </head>
@@ -581,7 +587,7 @@
   <div id="projectStrip" class="projectStrip" style="display:none">
     <div class="stripCard" style="flex:0.80">
       <div class="stripTitle">
-        <span><b>Cobertura técnica</b> (M/S/C) + redundância</span>
+        <span><b>Cobertura</b> (M/S/C) + redundância</span>
         <span class="mini" id="covTeamLabel"></span>
       </div>
       <div id="covBars" class="covRows"></div>
@@ -589,7 +595,7 @@
 
     <div class="stripCard" style="flex:2.6">
       <div class="stripTitle">
-        <span><b>Ranking</b> por equipe (Expert × BN)</span>
+        <span><b>Ranking (Sérgio)</b> × Ranking (Modelo)</span>
         <span class="mini" id="rankMeta"></span>
       </div>
       <div id="rankBoard" class="rankBoard"></div>
@@ -600,22 +606,22 @@
     <!-- NOVO: KPIs à direita -->
     <div class="stripCard kpiStrip" style="flex:0.75">
       <div class="stripTitle">
-        <span><b>Resumo</b> (AE/AT/AC)</span>
+        <span>Por que esta equipe ficou aqui?</span>
         <span class="mini"></span>
       </div>
 
       <!-- COLE AQUI o seu antigo <div class="kpis"> ... </div> -->
       <div class="kpis">
           <div class="kpi">
-            <div class="t">AE  </div>
+            <div class="t">Aptidão da Equipe (AE)  </div>
             <div class="v" id="kpiAE">—</div>
             <div class="s" id="kpiAETier">—</div>
           
-            <div class="t">AT </div>
+            <div class="t">Aptidão Técnica (AT) </div>
             <div class="v" id="kpiAT">—</div>
             <div class="s" id="kpiATTier">—</div>
           
-            <div class="t">AC  </div>
+            <div class="t">Aptidão Colaborativa (AC)  </div>
             <div class="v" id="kpiAC">—</div>
             <div class="s" id="kpiACTier">—</div>
           </div>
@@ -664,13 +670,14 @@
       </div>
     </section>
 
+
     <!-- RIGHT -->
     <section class="card">
       <div class="hd">
         <strong>2) Rede (estrutura + pesos/funções)</strong>
-        <div class="pill">AT: <span class="mono">WMAX</span> (Dom=1, Eco=1, Ling=3)</div>
-        <div class="pill">AC: <span class="mono">WMAX</span> (PC_VL=1, PC_L=2, PC_M=5, PC_H=1, PC_VH=5)</div>
-        <div class="pill">AE: <span class="mono">WMIN</span> (AT=3, AC=1)</div>
+        <div class="pill">AT: <span class="mono">WMEAN</span> (Dom=3, Eco=1, Ling=5)</div>
+        <div class="pill">AC: <span class="mono">WMAX</span> </div>
+        <div class="pill">AE: <span class="mono">WMIN</span> (AT=5, AC=1)</div>
       </div>
       <div class="bd">
         <div class="split" style="grid-template-columns:1fr">
@@ -705,15 +712,15 @@
 
                 <div class="grid2" style="margin-top:10px">
                   <div class="barcard">
-                    <div class="ttl"><strong>AT</strong><span class="mini" id="projMetaAT">AT (dist_AT)</span></div>
+                    <div class="ttl"><strong>AT</strong><span class="mini" id="projMetaAT">AT </span></div>
                     <svg id="projAT" width="100%" height="300" viewBox="0 0 760 260"></svg>
                   </div>
                   <div class="barcard">
-                    <div class="ttl"><strong>AC</strong><span class="mini" id="projMetaAC">AC (dist_AC)</span></div>
+                    <div class="ttl"><strong>AC</strong><span class="mini" id="projMetaAC">AC </span></div>
                     <svg id="projAC" width="100%" height="300" viewBox="0 0 760 260"></svg>
                   </div>
                   <div class="barcard">
-                    <div class="ttl"><strong>AE</strong><span class="mini" id="projMetaAE">AE (dist_AE)</span></div>
+                    <div class="ttl"><strong>AE</strong><span class="mini" id="projMetaAE">AE </span></div>
                     <svg id="projAE" width="100%" height="300" viewBox="0 0 760 260"></svg>
                   </div>
                   <div class="barcard">
@@ -736,7 +743,7 @@
 
                     <!-- 4º painel: PC ocupa a linha inteira (pela regra do grid2) -->
                     <div class="barcard">
-                      <div class="ttl"><strong>PC</strong><span class="mini">dist_PC</span></div>
+                      <div class="ttl"><strong>Colaboração anterior</strong><span class="mini"></span></div>
                       <svg id="projPC" width="100%" height="260" viewBox="0 0 760 260"></svg>
                     </div>
                   </div>
@@ -756,6 +763,41 @@
                   <div id="techTargetsText" class="mini" style="margin:-6px 0 6px 0;color:#9fb0c0"></div>
 
                   <svg id="projTechOcc" width="100%" height="420" viewBox="0 0 760 420"></svg>
+                </div>
+
+
+
+                <div class="barcard" style="margin-top:10px">
+                  <div class="ttl">
+                    <strong>Trade-offs por equipe (barras + linha)</strong>
+                    <span class="mini" id="projMetaTrade"></span>
+                  </div>
+
+                  <div class="gridTrade" style="margin-top:10px">
+                    <div class="barcard">
+                      <div class="ttl"><strong>1) Cobertura (barra) + AE (linha)</strong><span class="mini"></span></div>
+                      <svg id="projCovAE" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    </div>
+
+                    <div class="barcard">
+                      <div class="ttl"><strong>2) Redundância (barra) + AC (linha)</strong><span class="mini"></span></div>
+                      <svg id="projRedAC" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    </div>
+
+                    <div class="barcard">
+                      <div class="ttl"><strong>3) PC_VH (barra) + AC (linha)</strong><span class="mini"></span></div>
+                      <svg id="projPCVHAC" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    </div>
+
+                    <div class="barcard">
+                      <div class="ttl"><strong>4) AT (barra) + AC (linha)</strong><span class="mini"></span></div>
+                      <svg id="projATAC" width="100%" height="260" viewBox="0 0 760 260"></svg>
+                    </div>
+                  </div>
+
+                  <div class="foot">
+                    Barras usam a cor da equipe; a linha é única (comparação entre equipes) e os pontos são coloridos por equipe.
+                  </div>
                 </div>
 
 
@@ -921,6 +963,343 @@ function attachNodeTooltips(){
 // Paleta simples (para quando você quiser comparar várias equipes no mesmo gráfico)
 const COLORS = ["#7aa2ff", "#62d26f", "#ffd166", "#ff6b6b", "#c77dff", "#4dd4ff"];
 
+
+
+/* =======================
+   Trade-off charts (bar + line) — PATCH
+   ======================= */
+
+// cor determinística por equipe (estável em todos os gráficos)
+function colorForTeamId(teamId){
+  const s = String(teamId ?? "");
+  let h = 0;
+  for (let i=0;i<s.length;i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0;
+  return COLORS[h % COLORS.length];
+}
+
+function numOrNaN(v){
+  const n = safeParseFloat(v);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+// 1) Cobertura total do projeto (Dom/Eco/Ling × M/S/C): somatório coberto / somatório total
+function calcCoverageTotal(row){
+  const dims = ["dominio","ecossistema","linguagens"];
+  const kinds = ["m","s","c"];
+  let tot = 0, cov = 0;
+  for (const d of dims){
+    for (const k of kinds){
+      tot += safeInt(row[`${d}_${k}_total`]);
+      cov += safeInt(row[`${d}_${k}_covered`]);
+    }
+  }
+  return (tot > 0) ? (cov / tot) : NaN;
+}
+
+// 2) Redundância total
+// - se existir coluna pronta (recomendado), usa.
+// - senão tenta estimar via listas *_covered_list (se existirem).
+function calcRedundancyTotal(row){
+  const directKeys = [
+    "redundancia_total","redundancy_total","redund_total","redund_total_count",
+    "redundancia","redundancy"
+  ];
+  for (const k of directKeys){
+    const n = numOrNaN(row[k]);
+    if (Number.isFinite(n)) return n;
+  }
+
+  // fallback por listas: redundância = itens - itens únicos
+  const dims = ["dominio","ecossistema","linguagens"];
+  const kinds = ["m","s","c"];
+  let all = [];
+  for (const d of dims){
+    for (const k of kinds){
+      all.push(...normalizeList(row[`${d}_${k}_covered_list`]));
+    }
+  }
+  if (!all.length) return 0;
+  return Math.max(0, all.length - uniq(all).length);
+}
+
+// 3) PC_VH proporcional (0..1)
+function getPCVHProp(row){
+  const v1 = numOrNaN(row.PC_VH ?? row.pc_vh ?? row.pcVH);
+  if (Number.isFinite(v1)) return clamp(v1, 0, 1);
+
+  if (row.dist_PC){
+    const d = parseDistAE(row.dist_PC);
+    return clamp(Number(d?.[4] ?? 0), 0, 1);
+  }
+
+  // fallback bem neutro
+  return NaN;
+}
+
+// SVG bar+line chart
+function drawBarLineChart(svg, items, opts){
+  if (!svg) return;
+  svgClear(svg);
+
+  const {W,H} = syncViewBox(svg, 760, 260);
+
+  const padL = 44, padR = 44, padT = 18, padB = 62;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const n = Math.max(1, items.length);
+  const xStep = innerW / n;
+  const bw = Math.max(10, xStep * 0.55);
+
+  const barMin = (opts?.barMin ?? 0);
+  const barMax = (Number.isFinite(opts?.barMax) ? opts.barMax : Math.max(1e-9, ...items.map(it => (Number.isFinite(it.bar)?it.bar:0))));
+  const lineMin = (opts?.lineMin ?? 0);
+  const lineMax = (opts?.lineMax ?? 1);
+
+  // eixos
+  svg.appendChild(svgEl("line",{x1:padL,y1:padT+innerH,x2:padL+innerW,y2:padT+innerH,stroke:"#d7dde6","stroke-width":"2"}));
+  svg.appendChild(svgEl("line",{x1:padL,y1:padT,x2:padL,y2:padT+innerH,stroke:"#d7dde6","stroke-width":"2"}));
+  svg.appendChild(svgEl("line",{x1:W-padR,y1:padT,x2:W-padR,y2:padT+innerH,stroke:"#d7dde6","stroke-width":"2"}));
+
+  // ticks (esquerda = barra)
+  function yBar(v){
+    const t = (clamp(v, barMin, barMax) - barMin) / Math.max(1e-9, (barMax - barMin));
+    return padT + innerH - t*innerH;
+  }
+  function yLine(v){
+    const t = (clamp(v, lineMin, lineMax) - lineMin) / Math.max(1e-9, (lineMax - lineMin));
+    return padT + innerH - t*innerH;
+  }
+
+  const tickFont = 11;
+
+  const leftTicks = (opts?.barTicks ?? [barMin, (barMin+barMax)/2, barMax]);
+  leftTicks.forEach(tv=>{
+    const y = yBar(tv);
+    svg.appendChild(svgEl("line",{x1:padL-4,y1:y,x2:padL,y2:y,stroke:"#94a3b8"}));
+    const t = svgEl("text",{x:padL-8,y:y+4,"text-anchor":"end",fill:"#64748b","font-size":tickFont,"font-family":"ui-monospace"});
+    t.textContent = (opts?.barFmtTick ? opts.barFmtTick(tv) : String(Math.round(tv*100)/100));
+    svg.appendChild(t);
+  });
+
+  const rightTicks = (opts?.lineTicks ?? [0,0.5,1]);
+  rightTicks.forEach(tv=>{
+    const y = yLine(tv);
+    svg.appendChild(svgEl("line",{x1:W-padR,y1:y,x2:W-padR+4,y2:y,stroke:"#94a3b8"}));
+    const t = svgEl("text",{x:W-padR+8,y:y+4,"text-anchor":"start",fill:"#64748b","font-size":tickFont,"font-family":"ui-monospace"});
+    t.textContent = (opts?.lineFmtTick ? opts.lineFmtTick(tv) : String(Math.round(tv*100)/100));
+    svg.appendChild(t);
+  });
+
+  // labels dos eixos
+  if (opts?.barLabel){
+    const tl = svgEl("text",{x:padL,y:padT-4,"text-anchor":"start",fill:"#0b1220","font-size":"12","font-weight":"800","font-family":"ui-sans-serif"});
+    tl.textContent = opts.barLabel;
+    svg.appendChild(tl);
+  }
+  if (opts?.lineLabel){
+    const tr = svgEl("text",{x:W-padR,y:padT-4,"text-anchor":"end",fill:"#0b1220","font-size":"12","font-weight":"800","font-family":"ui-sans-serif"});
+    tr.textContent = opts.lineLabel;
+    svg.appendChild(tr);
+  }
+
+  // barras + pontos
+  const pts = [];
+  for (let i=0;i<n;i++){
+    const it = items[i];
+    const barV = Number.isFinite(it.bar) ? it.bar : 0;
+    const lineV = Number.isFinite(it.line) ? it.line : NaN;
+
+    const cx = padL + i*xStep + xStep/2;
+    const x = cx - bw/2;
+
+    const y0 = padT + innerH;
+    const yh = yBar(barV);
+    const bh = Math.max(0, y0 - yh);
+
+    svg.appendChild(svgEl("rect",{
+      x, y:yh, width:bw, height:bh,
+      rx:"7", ry:"7",
+      fill: it.color || "#94a3b8",
+      opacity:"0.92"
+    }));
+
+    // valor da barra (compacto)
+    const tv = svgEl("text",{
+      x: cx, y: Math.max(padT+10, yh-6),
+      "text-anchor":"middle",
+      fill:"#0b1220",
+      "font-size":"11",
+      "font-family":"ui-monospace"
+    });
+    tv.textContent = opts?.barFmt ? opts.barFmt(barV) : String(barV);
+    svg.appendChild(tv);
+
+    // label X (rotacionado)
+    const xl = svgEl("text",{
+      x: cx, y: padT+innerH+34,
+      fill:"#475569",
+      "font-size":"11",
+      "font-family":"ui-monospace"
+    });
+    xl.setAttribute("text-anchor","end");
+    xl.setAttribute("transform", `rotate(-35 ${cx} ${padT+innerH+34})`);
+    xl.textContent = String(it.label ?? "");
+    svg.appendChild(xl);
+
+    if (Number.isFinite(lineV)){
+      const ly = yLine(lineV);
+      pts.push([cx, ly]);
+
+      // ponto (colorido por equipe)
+      svg.appendChild(svgEl("circle",{cx, cy:ly, r:"5.5", fill: it.color || "#7aa2ff", stroke:"#ffffff", "stroke-width":"2"}));
+
+      // valor da linha
+      const lt = svgEl("text",{
+        x: cx, y: ly-10,
+        "text-anchor":"middle",
+        fill:"#0b1220",
+        "font-size":"11",
+        "font-family":"ui-monospace"
+      });
+      lt.textContent = opts?.lineFmt ? opts.lineFmt(lineV) : String(lineV);
+      svg.appendChild(lt);
+    }
+  }
+
+  // linha (uma só, para leitura do trade-off)
+  if (pts.length >= 2){
+    const poly = svgEl("polyline",{
+      points: pts.map(p=>`${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" "),
+      fill:"none",
+      stroke:"#0b1220",
+      "stroke-width":"2.2",
+      opacity:"0.45"
+    });
+    svg.appendChild(poly);
+  }
+}
+
+// render dos 4 gráficos para o projeto selecionado
+function renderProjectTradeCharts(projectId){
+  const meta = $("projMetaTrade");
+
+  const sv1 = $("projCovAE");
+  const sv2 = $("projRedAC");
+  const sv3 = $("projPCVHAC");
+  const sv4 = $("projATAC");
+
+  if (!projectId || !DATA?.length){
+    [sv1,sv2,sv3,sv4].forEach(svgClear);
+    if (meta) meta.textContent = "";
+    return;
+  }
+
+  const rows = DATA.filter(r => String(r.projeto_id||r.project_id||r.project||"") === String(projectId));
+  if (!rows.length){
+    [sv1,sv2,sv3,sv4].forEach(svgClear);
+    if (meta) meta.textContent = "— sem equipes —";
+    return;
+  }
+
+  // ordenação consistente: rank_bn, senão time_id
+  const ordered = rows.slice().sort((a,b)=>{
+    const ra = safeParseFloat(a.rank_bn), rb = safeParseFloat(b.rank_bn);
+    if (Number.isFinite(ra) && Number.isFinite(rb)) return ra - rb;
+    return teamKey(a).localeCompare(teamKey(b));
+  });
+
+  const items = ordered.map(r=>{
+    const tid = teamKey(r);
+    return {
+      label: tid,
+      color: colorForTeamId(tid),
+      row: r
+    };
+  });
+
+  // ===== 1) Cobertura vs AE =====
+  const it1 = items.map(it=>({
+    label: it.label,
+    color: it.color,
+    bar: calcCoverageTotal(it.row),                  // 0..1
+    line: numOrNaN(it.row.ae_bn_mean)                // 0..1 (ou 0.1..0.9)
+  }));
+  drawBarLineChart(sv1, it1, {
+    barLabel: "Cobertura",
+    lineLabel: "AE",
+    barMin: 0, barMax: 1,
+    lineMin: 0, lineMax: 1,
+    barTicks: [0,0.5,1],
+    lineTicks: [0,0.5,1],
+    barFmtTick: v => `${Math.round(v*100)}%`,
+    lineFmtTick: v => `${Math.round(v*100)}%`,
+    barFmt: v => Number.isFinite(v) ? `${Math.round(v*100)}%` : "—",
+    lineFmt: v => Number.isFinite(v) ? fmt(v,2) : "—"
+  });
+
+  // ===== 2) Redundância vs AC (troca p/ AE se quiser) =====
+  const reds = items.map(it=>calcRedundancyTotal(it.row)).map(v => (Number.isFinite(v)?v:0));
+  const redMax = Math.max(1, ...reds);
+
+  const it2 = items.map((it,idx)=>({
+    label: it.label,
+    color: it.color,
+    bar: calcRedundancyTotal(it.row),                // contagem (ou taxa)
+    line: numOrNaN(it.row.AC_cont)                   // AC (0..1)
+    // line: numOrNaN(it.row.ae_bn_mean)             // <- se quiser AE na linha, é só trocar aqui
+  }));
+  drawBarLineChart(sv2, it2, {
+    barLabel: "Redund.",
+    lineLabel: "AC",
+    barMin: 0, barMax: redMax,
+    lineMin: 0, lineMax: 1,
+    barTicks: [0, Math.round(redMax/2), redMax],
+    lineTicks: [0,0.5,1],
+    barFmt: v => Number.isFinite(v) ? String(Math.round(v)) : "—",
+    lineFmt: v => Number.isFinite(v) ? fmt(v,2) : "—"
+  });
+
+  // ===== 3) PC_VH vs AC =====
+  const it3 = items.map(it=>({
+    label: it.label,
+    color: it.color,
+    bar: getPCVHProp(it.row),                        // 0..1
+    line: numOrNaN(it.row.AC_cont)                   // 0..1
+  }));
+  drawBarLineChart(sv3, it3, {
+    barLabel: "PC_VH",
+    lineLabel: "AC",
+    barMin: 0, barMax: 1,
+    lineMin: 0, lineMax: 1,
+    barTicks: [0,0.5,1],
+    lineTicks: [0,0.5,1],
+    barFmtTick: v => `${Math.round(v*100)}%`,
+    barFmt: v => Number.isFinite(v) ? `${Math.round(v*100)}%` : "—",
+    lineFmt: v => Number.isFinite(v) ? fmt(v,2) : "—"
+  });
+
+  // ===== 4) AT vs AC =====
+  const it4 = items.map(it=>({
+    label: it.label,
+    color: it.color,
+    bar: numOrNaN(it.row.AT_cont),                   // 0..1
+    line: numOrNaN(it.row.AC_cont)                   // 0..1
+  }));
+  drawBarLineChart(sv4, it4, {
+    barLabel: "AT",
+    lineLabel: "AC",
+    barMin: 0, barMax: 1,
+    lineMin: 0, lineMax: 1,
+    barTicks: [0,0.5,1],
+    lineTicks: [0,0.5,1],
+    barFmt: v => Number.isFinite(v) ? fmt(v,2) : "—",
+    lineFmt: v => Number.isFinite(v) ? fmt(v,2) : "—"
+  });
+
+  if (meta) meta.textContent = `${rows.length} equipes | ordem por rank_bn`;
+}
+
 /* =======================
    Util
    ======================= */
@@ -973,6 +1352,16 @@ function safeParseFloat(s){
   const n = Number(t);
   return Number.isFinite(n) ? n : NaN;
 }
+function pickField(obj, keys){
+  for (const k of keys){
+    if (obj && Object.prototype.hasOwnProperty.call(obj, k)){
+      const v = obj[k];
+      if (v !== undefined && v !== null && String(v).trim() !== "") return v;
+    }
+  }
+  return null;
+}
+
 
 /* =======================
    CSV/TSV parsing (robusto p/ TAB e aspas)
@@ -1300,7 +1689,11 @@ function drawNodeWithBars(svg, {x,y,w,h,title,dist, funcLabel=null, weightsLabel
   const barWmax  = Math.max(10, w - (barX0 - x) - pad - pctCol);
 
   const rowGap = barH / labels.length;
-  const bh = Math.max(10, rowGap * 0.60);
+  let bh = Math.max(10, rowGap * 0.60);
+
+  // PATCH: quando só existe 1 barra (ex.: PC Score), limita a espessura
+  if (labels.length === 1) bh = Math.min(bh, 16); // ajuste 14~20 como preferir
+
 
   for (let i=0;i<labels.length;i++){
     const by = barTop + i*rowGap + (rowGap - bh)/2;
@@ -1369,27 +1762,30 @@ function renderBNGraph(row, dists){
   defs.appendChild(marker);
   svg.appendChild(defs);
 
-
-  //mudar tamanho das caixas dos graficos
   const smallW = 380, smallH = 50;
   const boxW = 500, boxH = 240;
-  const boxW_AT = 600
+  const boxW_AT = 600;
   const TIER = ["VL","L","M","H","VH"];
-
+  const CENTROIDES = [0.1,0.3,0.5,0.7,0.9];
 
   function compactNonZero(dist){
-    const pairs = TIER.map((lab,i)=>({lab, v:Number(dist?.[i] ?? 0)}))
-                    .filter(p => p.v > 1e-9);
+    const pairs = TIER.map((lab,i)=>({lab, v:Number(dist?.[i] ?? 0)})).filter(p => p.v > 1e-9);
     return pairs.length
       ? { dist: pairs.map(p=>p.v), labels: pairs.map(p=>p.lab) }
       : { dist: [0], labels: ["—"] };
+  }
+
+  function distMean(dist){
+    if (!Array.isArray(dist) || dist.length !== 5) return NaN;
+    let m = 0;
+    for (let i=0;i<5;i++) m += Number(dist[i] ?? 0) * CENTROIDES[i];
+    return m;
   }
 
   const domC  = compactNonZero(dists.dom);
   const ecoC  = compactNonZero(dists.eco);
   const lingC = compactNonZero(dists.ling);
 
-  // e agora desenhe assim:
   const dom = drawNodeWithBars(svg,{
     x:50,y:0,w:smallW,h:smallH,title:"Domínio",
     dist: domC.dist, barLabels: domC.labels, maxValue: 1,
@@ -1401,81 +1797,79 @@ function renderBNGraph(row, dists){
     metaLabel: dists.metaEco
   });
   const ling= drawNodeWithBars(svg,{
-    x:50,y:120,w:smallW,h:smallH,title:"Linguagens ",
+    x:50,y:120,w:smallW,h:smallH,title:"Linguagens",
     dist: lingC.dist, barLabels: lingC.labels, maxValue: 1,
     metaLabel: dists.metaLing
   });
 
-  //const dom = drawNodeWithBars(svg,{x:50,y:40,w:smallW,h:smallH,title:"Domínio (Dom)",dist:dists.dom, metaLabel:dists.metaDom});
-  //const eco = drawNodeWithBars(svg,{x:50,y:190,w:smallW,h:smallH,title:"Ecossistema (Eco)",dist:dists.eco, metaLabel:dists.metaEco});
-  //const ling= drawNodeWithBars(svg,{x:50,y:340,w:smallW,h:smallH,title:"Linguagens (Ling)",dist:dists.ling, metaLabel:dists.metaLing});
-  // PC evidence as five nodes: PC_VL..PC_VH (each mapped to VL..VH states)
-  
-  const pcTitles = ["PC_VL","PC_L","PC_M","PC_H","PC_VH"];
-  const shares = (dists.pc || [0,0,0,0,0]).map(x=>Number(x));
-  const pcNodes = [];
-
-  const pcX = dom.x;                 // alinha na mesma coluna de Dom/Eco/Ling
-  const pcY0 = ling.y + ling.h + 26; // começa logo abaixo de Linguagens
-  const pcW = dom.w;                 // mesma largura das caixas da esquerda
-  const pcH = 50, pcGap = 10;
-
-
-  for (let i=0;i<5;i++){
-    const s = Number.isFinite(shares[i]) ? shares[i] : 0;
-    pcNodes.push(drawNodeWithBars(svg,{
-      x: pcX,
-      y: pcY0 + i*(pcH+pcGap),
-      w: pcW,
-      h: pcH,
-      title: pcTitles[i],
-      dist: [Math.max(0, Math.min(1, s))],
-      barLabels: [""],//["% pares"],
-      maxValue: 1,     // distribuição VL..VH do PC_*
-      metaLabel: (s*100).toFixed(0)+"%" // mostra o share como “46%”
-    }));
-  }
-
- 
-  
-
-
-  const at  = drawNodeWithBars(svg,{x:650,y:0,w:boxW,h:boxH,title:"AT (Aptidão Tecnológica)",dist:dists.at,
-    funcLabel: DEFAULT_MODEL.AT.func,
-    weightsLabel:`(Dom=${DEFAULT_MODEL.AT.weights.Dom}, Eco=${DEFAULT_MODEL.AT.weights.Eco}, Ling=${DEFAULT_MODEL.AT.weights.Ling})`,
-    tooltipId: "TT_AT"// DEFAULT_MODEL.AT.func === "WMAX" ? "TT_WMAX" : "TT_WMIN"
+  // AT
+  const at = drawNodeWithBars(svg,{
+    x: 520, y: 20, w: boxW_AT, h: boxH,
+    title:"AT (Aptidão Tecnológica)",
+    dist: dists.at,
+    funcLabel:"WMAX",
+    weightsLabel:"(Dom=1, Eco=1, Ling=3)",
+    metaLabel:"",
+    tooltipId:"TT_AT"
   });
 
-  const ac  = drawNodeWithBars(svg,{x:650,y:240,w:boxW,h:boxH,title:"AC (Aptidão Colaborativa)",dist:dists.ac,
-    funcLabel: DEFAULT_MODEL.AC.func,
-    weightsLabel:`(PC_VL=${DEFAULT_MODEL.AC.weights.PC_VL}, PC_L=${DEFAULT_MODEL.AC.weights.PC_L}, PC_M=${DEFAULT_MODEL.AC.weights.PC_M}, PC_H=${DEFAULT_MODEL.AC.weights.PC_H}, PC_VH=${DEFAULT_MODEL.AC.weights.PC_VH})`,
-    tooltipId: "TT_AC" //DEFAULT_MODEL.AC.func === "WMAX" ? "TT_WMAX" : "TT_WMIN"
+  // PC (evidência)
+  const pcLab = String(dists.pcLabel ?? "").trim() || "PC";
+  const pcScoreRaw = safeParseFloat(dists.pcScore);
+  const pcScore = Number.isFinite(pcScoreRaw) ? clamp(pcScoreRaw, 0, 1) : 0;
+
+  const pcEv = drawNodeWithBars(svg,{
+    x:520, y:280, w:360, h:boxH,     // ✅ PC à esquerda embaixo
+    title:"PC Score",
+    dist:[pcScore],
+    barLabels:[pcLab],
+    maxValue:1,
+    metaLabel:(pcScore*100).toFixed(0) + "%"
   });
 
-  const ae  = drawNodeWithBars(svg,{x:1280,y:125,w:boxW,h:boxH,title:"AE (Aptidão da Equipe)",dist:dists.ae,
-    funcLabel: DEFAULT_MODEL.AE.func,
-    weightsLabel:`(AT=${DEFAULT_MODEL.AE.weights.AT}, AC=${DEFAULT_MODEL.AE.weights.AC})`,
-    tooltipId:"TT_AE" // DEFAULT_MODEL.AE.func === "WMAX" ? "TT_WMAX" : "TT_WMIN"
+  // AC (nó explícito)
+  const acMean = distMean(dists.ac);
+  const acMeta = Number.isFinite(acMean)
+    ? `${pcLab} ${(acMean*100).toFixed(0)}%`
+    : pcLab;
+
+  const acNode = drawNodeWithBars(svg,{
+    x:900, y:280, w:360, h:boxH,     // ✅ AC ao lado do PC
+    title:"AC (Aptidão Colaborativa)",
+    dist: dists.ac,
+    //funcLabel:"",
+    //weightsLabel:"",
+    //metaLabel: acMeta,
+    tooltipId:""
   });
 
-  drawArrow(svg, dom.x+dom.w, dom.y+dom.h/2, at.x, at.y+50);
-  drawArrow(svg, eco.x+eco.w, eco.y+eco.h/2, at.x, at.y+boxH/2);
-  drawArrow(svg, ling.x+ling.w, ling.y+ling.h/2, at.x, at.y+boxH-50);
-
-  const acY0 = ac.y + 50;
-  const acYstep = (boxH - 100) / 4;
-
-  pcNodes.forEach((n, i) => {
-    drawArrow(svg, n.x + n.w, n.y + n.h/2, ac.x, acY0 + i * acYstep);
+  // AE
+  const ae = drawNodeWithBars(svg,{
+    x: 1280, y: 60, w: boxW, h: boxH,
+    title:"AE (Aptidão da Equipe)",
+    dist: dists.ae,
+    funcLabel:"WMIN",
+    weightsLabel:"(AT=3, AC=1)",
+    metaLabel:"",
+    tooltipId:"TT_AE"
   });
 
+  // setas Dom/Eco/Ling -> AT
+  drawArrow(svg, dom.x+dom.w,  dom.y+smallH/2,  at.x, at.y+boxH*0.30);
+  drawArrow(svg, eco.x+eco.w,  eco.y+smallH/2,  at.x, at.y+boxH*0.50);
+  drawArrow(svg, ling.x+ling.w,ling.y+smallH/2, at.x, at.y+boxH*0.70);
 
+  // ✅ setas PC -> AC -> AE
+  drawArrow(svg, pcEv.x+pcEv.w,   pcEv.y+boxH/2, acNode.x, acNode.y+boxH/2);
+  drawArrow(svg, acNode.x+acNode.w, acNode.y+boxH/2, ae.x, ae.y+boxH/2 + 24);
+
+  // AT -> AE
   drawArrow(svg, at.x+at.w, at.y+boxH/2, ae.x, ae.y+boxH/2 - 24);
-  drawArrow(svg, ac.x+ac.w, ac.y+boxH/2, ae.x, ae.y+boxH/2 + 24);
 
-  // re-bind tooltips for new SVG text nodes
   attachNodeTooltips();
 }
+
+
 function renderTierOnly(el, title, tier, score){
   const s = Number(score);
   const sc = Number.isFinite(s) ? Math.max(0, Math.min(1, s)) : 0;
@@ -1659,8 +2053,8 @@ function renderCoveragePanel(row, label=""){
     lbl.textContent = "";
     return;
   }
-
-  lbl.textContent = label ? `Equipe: ${label}` : "";
+  //Equipe: 
+  lbl.textContent = label ? `${label}` : "";
 
   const dims = [
     {k:"dominio",     label:"DOM"},
@@ -1763,6 +2157,7 @@ function renderProjectRankBoard(projectId, selectedRow){
 
     return teamKey(a).localeCompare(teamKey(b));
   });
+  
 
   meta.textContent = `${rows.length} equipes`;
 
@@ -1841,8 +2236,23 @@ function render(){
 
   const ae = safeParseFloat(row.ae_bn_mean);
   const at = safeParseFloat(row.AT_cont);
-  const ac = safeParseFloat(row.AC_cont);
+
+  // >>> NOVO: PC como evidência direta de AC
+  const pcLabel = String(row.pc_label ?? row.PC_label ?? row.PC_LABEL ?? row.pcLabel ?? "").trim();
+  const pcScoreRaw = safeParseFloat(row.pc_score ?? row.PC_score ?? row.PC_SCORE ?? row.pcScore);
+
+
+  // AC agora vem direto do pc_score (fallback para AC_cont se não existir)
+  const ac = Number.isFinite(pcScoreRaw) ? clamp(pcScoreRaw, 0, 1) : safeParseFloat(row.AC_cont);
+
+  // Se existir um objeto BN no seu runtime, seta evidência em AC pelo label discretizado
+  // (isso não quebra se bn não existir)
+  if (window.bn && typeof window.bn.setEvidence === "function" && pcLabel){
+    window.bn.setEvidence("AC", pcLabel);
+  }
+
   const dist = parseDistAE(row.dist_AE);
+
 
   // KPIs
   setText("kpiAE", fmt(ae, 6));
@@ -1850,13 +2260,13 @@ function render(){
   setText("kpiAC", fmt(ac, 6));
 
   const aeTier = nearestTier(ae);
-  setHTML("kpiAETier", `tier ≈ <span class="mono">${aeTier.tier}</span> (centroide ${fmt(aeTier.centroid,1)})`);
+  setHTML("kpiAETier", `<span class="mono">${aeTier.tier}</span> `);
 
   const atTier = nearestTier(at);
-  setHTML("kpiATTier", `tier ≈ <span class="mono">${atTier.tier}</span>`);
+  setHTML("kpiATTier", `<span class="mono">${atTier.tier}</span>`);
 
   const acTier = nearestTier(ac);
-  setHTML("kpiACTier", `tier ≈ <span class="mono">${acTier.tier}</span>`);
+  setHTML("kpiACTier", `<span class="mono">${acTier.tier}</span>`);
 
   // Charts
   drawBars($("aeBars"), dist, COLORS[0]);
@@ -1887,8 +2297,13 @@ function render(){
   const distLing = row.dist_Ling ? parseDistAE(row.dist_Ling) : distFromTierScore(lingTier, lingScore);
 
 
-  const distAT = row.dist_AT ? parseDistAE(row.dist_AT) : distFromCont(at);
-  const distAC = row.dist_AC ? parseDistAE(row.dist_AC) : distFromCont(ac);
+  const distATraw = pickField(row, ['dist_AT','dist_at','distAT','distAt']);
+  const distAT = distATraw ? parseDistAE(distATraw) : distFromCont(at);
+  
+  const distACraw = pickField(row, ['dist_AC','dist_ac','distAC','distAc']);
+  const distAC = distACraw
+    ? parseDistAE(distACraw)
+    : (pcLabel ? distFromTierScore(pcLabel, ac) : distFromCont(ac));
   const distAE2 = dist; // já veio do dist_AE
 
   // pinta mini gráficos (se os SVGs existirem)
@@ -1919,18 +2334,33 @@ function render(){
 
   // Renderiza a rede (com setas + gráficos dentro dos nós)
   renderBNGraph(row, {
-    dom: distDom, eco: distEco, ling: distLing, pc: distPC, at: distAT, ac: distAC, ae: distAE2,
+    dom: distDom,
+    eco: distEco,
+    ling: distLing,
+       
+    at: distAT,
+    ac: distAC,  
+    ae: distAE2,
+
+    pcLabel,
+    pcScore: ac, // ac = pc_score clampado quando existe
+
     metaDom:  row.dist_Dom  ? "dist_Dom"  : `${String(domTier).trim()} ${(Number.isFinite(domScore)? domScore*100 : 0).toFixed(0)}%`,
     metaEco:  row.dist_Eco  ? "dist_Eco"  : `${String(ecoTier).trim()} ${(Number.isFinite(ecoScore)? ecoScore*100 : 0).toFixed(0)}%`,
-    metaLing: row.dist_Ling ? "dist_Ling" : `${String(lingTier).trim()} ${(Number.isFinite(lingScore)? lingScore*100 : 0).toFixed(0)}%`,
-
-    metaPC: row.dist_PC ? "dist_PC" : (row.PC_VL!==undefined ? "PC_VL..PC_VH" : "fallback"),
+    metaLing: row.dist_Ling ? "dist_Ling" : `${String(lingTier).trim()} ${(Number.isFinite(lingScore)? lingScore*100 : 0).toFixed(0)}%`
   });
+
+
 
   // Comparativo do projeto (todas as equipes)
   const pid = (document.getElementById('projectSel') ? document.getElementById('projectSel').value : null);
   if (pid) renderProjectComparison(pid);
   if (pid) renderProjectStrip(pid, row);
+  if (pid) renderProjectTradeCharts(pid);
+
+
+  
+
 
 // Dom/Eco/Ling discretos (se você adicionar colunas no CSV, eles aparecem)
   const dom = row.Dom ?? row.dom ?? row.DOM ?? row.dominio ?? row.dominio_tier ?? "VH (ex.)";
@@ -2112,9 +2542,15 @@ loadFromUrl(DATA_URL, "Resultados_bn.csv (GitHub RAW)")
 function buildDistForRow(row){
   const at = safeParseFloat(row.AT_cont);
   const ac = safeParseFloat(row.AC_cont);
-  const distAE = row.dist_AE ? parseDistAE(row.dist_AE) : [0,0,0,0,0];
-  const distAT = row.dist_AT ? parseDistAE(row.dist_AT) : distFromCont(at);
-  const distAC = row.dist_AC ? parseDistAE(row.dist_AC) : distFromCont(ac);
+  const distATraw = pickField(row, ['dist_AT','dist_at','distAT','distAt']);
+  const distAT = distATraw ? parseDistAE(distATraw) : distFromCont(at);
+
+  const distACraw = pickField(row, ['dist_AC','dist_ac','distAC','distAc']);
+  const distAC = distACraw ? parseDistAE(distACraw) : distFromCont(ac);
+
+  const distAEraw = pickField(row, ['dist_AE','dist_ae','distAE','distAe']);
+  const distAE = distAEraw ? parseDistAE(distAEraw) : distFromCont(ae);
+
 
   const domTier  = row.Dom ?? row.dom ?? row.DOM ?? row.dominio ?? row.dominio_tier ?? "VH";
   const ecoTier  = row.Eco ?? row.eco ?? row.ECO ?? row.ecossistema ?? row.ecossistema_tier ?? "VH";
@@ -2557,7 +2993,7 @@ function renderProjectTech(projectId, teamsPrebuilt=null){
     {label:"Dom", distKey:"distDom"},
     {label:"Eco", distKey:"distEco"},
     {label:"Ling", distKey:"distLing"},
-    {label:"PC", distKey:"distPC"},
+    {label:"Compatibilidade dos pares da equipe (PC)", distKey:"distPC"},
   ];
   const blockH = H/blocks.length;
 
