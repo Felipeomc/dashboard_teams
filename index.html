@@ -3297,18 +3297,32 @@ function extractTeamCollabStats(obj){
 
 
 function drawRadar(svg, values, labels, color, valueTexts){
-
   if(!svg) return;
   svgClear(svg);
 
+  const isRad2 = !!(svg.classList && svg.classList.contains("rad2"));
+
   const vb = (svg.getAttribute("viewBox")||"0 0 220 220").split(" ").map(Number);
   const W = vb[2], H = vb[3];
-  const cx = W/2, cy = H/2 + 6;
-  const R  = Math.min(W,H) * 0.34; // ~75
+
+  const cx = W/2;
+  const cy = H/2 + (isRad2 ? 2 : 6);
+
+  // <<< aqui diminui o "diâmetro" do radar2
+  const R  = Math.min(W,H) * (isRad2 ? 0.26 : 0.34);
 
   const N = labels.length;
   const levels = 4;
   const a0 = -Math.PI/2;
+
+  const gridStroke = isRad2 ? "#d1d5db" : "#e5e7eb";
+  const axisStroke = isRad2 ? "#cbd5e1" : "#cbd5e1";
+
+  const labelScale = isRad2 ? 1.10 : 1.20;
+  const labelFont  = isRad2 ? 13   : 24;
+  const valueFont  = isRad2 ? 10   : 18;
+  const valueDy    = isRad2 ? 12   : 18;
+  const lineDy     = isRad2 ? 11   : 16;
 
   function pt(i, s){
     const ang = a0 + i*(2*Math.PI/N);
@@ -3323,46 +3337,65 @@ function drawRadar(svg, values, labels, color, valueTexts){
       const p = pt(i,s);
       pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
     }
-    svg.appendChild(svgEl("polygon", { points: pts.join(" "), fill:"none", stroke:"#e5e7eb", "stroke-width":"1" }));
+    svg.appendChild(svgEl("polygon", {
+      points: pts.join(" "),
+      fill:"none",
+      stroke: gridStroke,
+      "stroke-width": isRad2 ? "1.1" : "1"
+    }));
   }
 
   // axes
   for (let i=0; i<N; i++){
     const p = pt(i,1);
-    svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:p.x, y2:p.y, stroke:"#cbd5e1", "stroke-width":"1" }));
+    svg.appendChild(svgEl("line", {
+      x1:cx, y1:cy, x2:p.x, y2:p.y,
+      stroke: axisStroke,
+      "stroke-width": isRad2 ? "1.1" : "1"
+    }));
   }
 
-  // labels (+ valores na ponta)
-  // labels (+ valores na ponta)
+  // labels + valores
   for (let i=0; i<N; i++){
-    const p = pt(i,1.20);
+    const p = pt(i, labelScale);
     const anchor = (p.x < cx-10) ? "end" : (p.x > cx+10 ? "start" : "middle");
 
-    // rótulo
-    const tLab = svgEl("text", { x:p.x, y:p.y, fill:"#475569", "font-size":"24", "font-family":"ui-monospace" });
+    // rótulo (DOM/ECO/LING etc)
+    const tLab = svgEl("text", {
+      x:p.x, y:p.y,
+      fill:"#475569",
+      "font-size": String(labelFont),
+      "font-family":"ui-monospace"
+    });
     tLab.setAttribute("text-anchor", anchor);
     tLab.textContent = labels[i];
     svg.appendChild(tLab);
 
-    // valores (suporta quebra de linha com \n)
-    if (valueTexts && valueTexts[i]!=null && String(valueTexts[i]).trim()!==""){
-      const lines = String(valueTexts[i]).split("\n");
-      lines.forEach((line, j)=>{
-        const tVal = svgEl("text", {
-          x: p.x,
-          y: p.y + 22 + j*18,
-          fill: "#0f172a",
-          "font-size": "18",
-          "font-family": "ui-monospace"
-        });
-        tVal.setAttribute("text-anchor", anchor);
-        tVal.textContent = line;
-        svg.appendChild(tVal);
+    // valor (pode ser multiline)
+    if (valueTexts && valueTexts[i] != null){
+      const raw = String(valueTexts[i]);
+      const lines = raw.split("\n");
+
+      const tVal = svgEl("text", {
+        x:p.x, y:(p.y + valueDy),
+        fill:"#0b1220",
+        "font-size": String(valueFont),
+        "font-family":"ui-monospace"
       });
+      tVal.setAttribute("text-anchor", anchor);
+
+      lines.forEach((ln, k)=>{
+        const tsp = svgEl("tspan", {
+          x: p.x,
+          dy: (k===0 ? 0 : lineDy)
+        });
+        tsp.textContent = ln;
+        tVal.appendChild(tsp);
+      });
+
+      svg.appendChild(tVal);
     }
   }
-
-
 
   // polygon
   const poly = [];
@@ -3371,16 +3404,23 @@ function drawRadar(svg, values, labels, color, valueTexts){
     const p = pt(i, v);
     poly.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
   }
-  svg.appendChild(svgEl("polygon", { points: poly.join(" "), fill: color, opacity:"0.5", stroke: color, "stroke-width":"2" }));
+  svg.appendChild(svgEl("polygon", {
+    points: poly.join(" "),
+    fill: color,
+    opacity: isRad2 ? "0.40" : "0.50",
+    stroke: color,
+    "stroke-width":"2"
+  }));
 
   // vertices
   for (let i=0; i<N; i++){
     const v = clamp01(values[i]);
     const p = pt(i, v);
-    svg.appendChild(svgEl("circle", { cx:p.x, cy:p.y, r:"3.4", fill: color }));
+    svg.appendChild(svgEl("circle", { cx:p.x, cy:p.y, r: isRad2 ? "2.8" : "3.4", fill: color }));
   }
-  svg.appendChild(svgEl("circle", { cx, cy, r:"2.2", fill:"#0b1220" }));
+  svg.appendChild(svgEl("circle", { cx, cy, r: isRad2 ? "2.0" : "2.2", fill:"#0b1220" }));
 }
+
 renderTierOnly(domContainer, "Domínio (DOM)", row.dominio_tier, row.dominio_score);
 renderTierOnly(ecoContainer, "Ecossistema (ECO)", row.ecossistema_tier, row.ecossistema_score);
 renderTierOnly(lingContainer,"Linguagens (LING)", row.linguagens_tier, row.linguagens_score);
@@ -3496,47 +3536,69 @@ function renderRadarsBelowTable(projectId){
     // 2ª linha: 3 proj
     const pairsLabel = `${s.pairsWithHistory}/${s.pairsTotal} pares\n${projTxt}`;
 
-const radar1Txt = [ fmt2(s.osfMean), fmt2(s.slfMean), pairsLabel ];
+    const radar1Txt = [ fmt2(s.osfMean), fmt2(s.slfMean), pairsLabel ];
 
 
-    // radar 2: DOM / ECO / LING (MUST) => covered/total e texto "1/2"
-    function must(prefix){
-      const total = safeInt(r[`${prefix}_m_total`]);
-      const cov   = safeInt(r[`${prefix}_m_covered`]);
-      return { ratio: (total>0 ? cov/total : 0), cov, total };
+    // radar 2: DOM / ECO / LING
+    // - o POLÍGONO continua usando MUST (ratio_m)
+    // - o RÓTULO mostra M/S/C separados
+    function covMSC_break(prefix){
+      const m_total = safeInt(r[`${prefix}_m_total`]);
+      const s_total = safeInt(r[`${prefix}_s_total`]);
+      const c_total = safeInt(r[`${prefix}_c_total`]);
+
+      const m_cov = safeInt(r[`${prefix}_m_covered`]);
+      const s_cov = safeInt(r[`${prefix}_s_covered`]);
+      const c_cov = safeInt(r[`${prefix}_c_covered`]);
+
+      const ratio_m = (m_total > 0) ? (m_cov / m_total) : 0; // radar usa isso
+
+      return { ratio_m, m_cov, m_total, s_cov, s_total, c_cov, c_total };
     }
 
-    const dom = must("dominio");
-    const eco = must("ecossistema");
-    const lin = must("linguagens");
+    function fmtMSC(x){
+      return `M ${x.m_cov}/${x.m_total} | S ${x.s_cov}/${x.s_total} | C ${x.c_cov}/${x.c_total}`;
+    }
 
+    const dom = covMSC_break("dominio");
+    const eco = covMSC_break("ecossistema");
+    const lin = covMSC_break("linguagens");
+
+    // polígono: SOMENTE MUST
     const radar2Vals = [
-      clamp01(dom.ratio),
-      clamp01(eco.ratio),
-      clamp01(lin.ratio)
-    ];
-    const radar2Txt = [
-      `${dom.cov}/${dom.total}`,
-      `${eco.cov}/${eco.total}`,
-      `${lin.cov}/${lin.total}`
+      clamp01(dom.ratio_m),
+      clamp01(eco.ratio_m),
+      clamp01(lin.ratio_m)
     ];
 
-    // monta HTML
+    // texto: M/S/C separado
+    const radar2Txt = [
+      fmtMSC(dom),
+      fmtMSC(eco),
+      fmtMSC(lin)
+    ];
+
+
+    
+
+
+    // monta HTML do card (precisa existir antes de pegar rad1/rad2)
     const div = document.createElement("div");
     div.className = "radarPair";
     div.innerHTML = `
       <div class="title mono">${team}</div>
-
       <svg class="rad1" viewBox="0 0 220 220"></svg>
       <svg class="rad2" viewBox="0 0 220 220" style="margin-top:6px"></svg>
     `;
     wrap.appendChild(div);
 
+    // agora sim rad1 e rad2 existem
     const rad1 = div.querySelector(".rad1");
     const rad2 = div.querySelector(".rad2");
 
     drawRadar(rad1, radar1Vals, ["OSF","SLF","Pares"], color, radar1Txt);
     drawRadar(rad2, radar2Vals, ["DOM","ECO","LING"], color, radar2Txt);
+
 
   });
 }
