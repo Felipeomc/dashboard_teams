@@ -645,13 +645,8 @@
   font-weight:0;
 }
 /* Aumenta os rótulos do radar técnico (DOM/ECO/LING) */
-.radarPair svg.rad2 text{
-  font-size:22px !important;
-}
-
-.radarPair svg.rad2 text tspan{
-  font-size:14px !important;
-}
+.radarPair svg.rad2 text{ font-size: 18px; }
+.radarPair svg.rad2 tspan{ font-size: 16px; }
 /* cada equipe vira 2 radars empilhados */
 .radarPair{
   border:1px solid var(--line);
@@ -3309,7 +3304,7 @@ function drawRadar(svg, values, labels, color, valueTexts){
   const cy = H/2 + (isRad2 ? 2 : 6);
 
   // <<< aqui diminui o "diâmetro" do radar2
-  const R  = Math.min(W,H) * (isRad2 ? 0.26 : 0.34);
+  const R  = Math.min(W,H) * (isRad2 ? 0.36 : 0.34);
 
   const N = labels.length;
   const levels = 4;
@@ -3319,10 +3314,10 @@ function drawRadar(svg, values, labels, color, valueTexts){
   const axisStroke = isRad2 ? "#cbd5e1" : "#cbd5e1";
 
   const labelScale = isRad2 ? 1.10 : 1.20;
-  const labelFont  = isRad2 ? 13   : 24;
-  const valueFont  = isRad2 ? 10   : 18;
-  const valueDy    = isRad2 ? 12   : 18;
-  const lineDy     = isRad2 ? 11   : 16;
+  const labelFont  = isRad2 ? 15   : 20;
+  const valueFont  = isRad2 ? 13   : 18;
+  const valueDy    = isRad2 ? 18   : 18;
+  const lineDy     = isRad2 ? 15   : 16;
 
   function pt(i, s){
     const ang = a0 + i*(2*Math.PI/N);
@@ -3557,8 +3552,9 @@ function renderRadarsBelowTable(projectId){
     }
 
     function fmtMSC(x){
-      return `M ${x.m_cov}/${x.m_total} | S ${x.s_cov}/${x.s_total} | C ${x.c_cov}/${x.c_total}`;
+      return `M ${x.m_cov}/${x.m_total}\nS ${x.s_cov}/${x.s_total}\nC ${x.c_cov}/${x.c_total}`;
     }
+
 
     const dom = covMSC_break("dominio");
     const eco = covMSC_break("ecossistema");
