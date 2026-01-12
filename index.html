@@ -15,7 +15,8 @@
     }
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--sans); background:var(--bg); color:var(--text);}
-    header{padding:10px 14px 6px; position:sticky; top:0; background:rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom:1px solid var(--line); z-index:10}
+    header{padding:10px 14px 6px; position:static; background:rgba(255,255,255,.82); backdrop-filter: blur(8px); border-bottom:1px solid var(--line); z-index:10}
+.topbar{position:sticky; top:0; background:rgba(255,255,255,.92); backdrop-filter: blur(8px); padding:6px 0 8px; z-index:20; border-bottom:1px solid var(--line)}
     h1{font-size:16px; margin:0 0 6px; font-weight:700; letter-spacing:.2px}
     .sub{color:var(--muted); font-size:12px; margin:0}
     .wrap{padding:16px 18px 26px; max-width:1300px; margin:0 auto;}
@@ -562,7 +563,117 @@
 }
 
 
-  </style>
+  
+/* ===== V9: Respostas rápidas + matriz por equipe (menos esforço cognitivo) ===== */
+.qaRow{display:grid; gap:10px; grid-template-columns:repeat(4, minmax(0,1fr)); margin-top:10px;}
+@media(max-width:1000px){ .qaRow{grid-template-columns:repeat(2, minmax(0,1fr));} }
+@media(max-width:620px){ .qaRow{grid-template-columns:1fr;} }
+
+.qaItem{border:1px solid var(--line); background:var(--card2); border-radius:14px; padding:10px;}
+.qaQ{font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:700;}
+.qaA{font-size:14px; font-weight:800; line-height:1.2;}
+.qaS{font-size:12px; color:var(--muted); margin-top:4px;}
+
+.tableWrap{overflow:auto; border:1px solid var(--line); border-radius:14px; margin-top:12px; background:#fff;}
+.tbl{width:100%; border-collapse:separate; border-spacing:0; font-size:12px; min-width:920px;}
+.tbl thead th{position:sticky; top:0; background:#fbfdff; border-bottom:1px solid var(--line); padding:10px 10px; text-align:left; white-space:nowrap; z-index:1;}
+.tbl tbody td{border-bottom:1px solid #eef2f7; padding:10px 10px; vertical-align:top;}
+.tbl tbody tr:hover{background:#fbfdff;}
+.tbl .mono{font-family:var(--mono);}
+.badge{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:4px 8px; font-size:11px; font-weight:800;}
+.badge.good{border-color:rgba(31,157,85,.35);}
+.badge.bad{border-color:rgba(180,35,24,.35);}
+.delta{font-family:var(--mono); font-weight:900;}
+.delta.ok{color:var(--good);}
+.delta.bad{color:var(--bad);}
+/* ===== setinhas de tendência (VL/L vs M vs H/VH) ===== */
+.tri{
+  display:inline-block;
+  margin-left:6px;
+  font-size:12px;
+  line-height:1;
+  vertical-align:1px;
+  font-weight:900;
+}
+.tri.up{ color: var(--good); }     /* verde */
+.tri.down{ color: var(--bad); }   /* vermelho */
+.tri.mid{ color: #64748b; }       /* cinza neutro */
+
+.miniBar{height:6px; border-radius:999px; background:#eef2f7; overflow:hidden; margin-top:6px;}
+.miniBar > span{display:block; height:100%; width:0%; background:linear-gradient(90deg,#9ca3af,#6b7280); border-radius:999px;}
+.miniBar.sel > span{background:linear-gradient(90deg,#7aa2ff,#4f7dff);}
+.clickRow{cursor:pointer;}
+/* legenda fininha das setinhas */
+.trend-legend{
+  font-size:11px;
+  color: var(--muted);
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+.trend-legend .item{ display:flex; gap:6px; align-items:center; }
+.trend-legend .ico{
+  font-weight:900;
+  line-height:1;
+  font-size:11px;
+}
+.trend-legend .ico.up{ color: var(--good); }
+.trend-legend .ico.down{ color: var(--bad); }
+.trend-legend .ico.mid{ color:#64748b; }
+
+.howto { font-size: 12px; color: #0f172a; }
+.howto .ico{
+  font-weight: 900;
+  margin: 0 2px 0 6px;
+}
+.howto .ico.mid { color: #64748b; }  /* neutro */
+.howto .ico.down{ color: #ef4444; }  /* baixo */
+.howto .ico.up  { color: #22c55e; }  /* alto */
+.howto .negrito{font-weight: bold; }
+
+
+/* ✅ grid compacto: 5 equipes × 2 radares = 10 blocos */
+.radarGrid2x{
+  display:grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap:8px;
+}
+.radarPair text{
+  font-size:19px;
+  font-weight:0;
+}
+/* Aumenta os rótulos do radar técnico (DOM/ECO/LING) */
+.radarPair svg.rad2 text{
+  font-size:22px !important;
+}
+
+.radarPair svg.rad2 text tspan{
+  font-size:14px !important;
+}
+/* cada equipe vira 2 radars empilhados */
+.radarPair{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:6px;
+  background:#fff;
+}
+
+/* radar menor */
+.radarPair svg{
+  width:100%;
+  height:150px;   /* bem menor */
+  display:block;
+}
+.radarPair .title{
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:2px;
+}
+
+
+</style>
 </head>
 <body>
 <div id="tooltip" class="tooltip"></div>
@@ -640,6 +751,80 @@
 
 <div class="wrap">
   <div class="grid">
+    <!-- V9: Respostas rápidas (história principal) -->
+    <section class="card" id="qaCard">
+      <div class="hd">
+        <strong>Desempenho por equipe</strong>
+        <span id="techTargetsText" class="mini" style="margin:-6px 0 6px 0;color:#9fb0c0"></span>
+        <span class="mini" id="qaSubtitle">—</span>
+        
+      </div>
+      <div class="bd">
+        <div class="howto">
+          <span></span> AE/AT/AC/Cobertura → <b>maior é melhor</b>. Ranking → <b>1 é melhor</b>.</span>
+          <span class="mini">   &nbsp;|&nbsp;   </span>
+          <span class="ico down">▼</span> VL/L
+          <span class="ico mid">●</span> M
+          <span class="ico up">▲</span> H/VH
+          <span class="mini">   &nbsp;|&nbsp;   </span>
+          <span class="howto">Acordo Expert × Modelo: </span>
+          <span class="howto negrito" id="qaAgree">—</span>
+          <span class="mini">   &nbsp;|&nbsp;   </span>
+          
+          
+        </div>
+
+        <!--<div class="qaRow">
+          <div class="qaItem">
+            <div class="qaQ">Melhor por AE (modelo)</div>
+            <div class="qaA" id="qaBestAE">—</div>
+            <div class="qaS" id="qaBestAENote">—</div>
+          </div>
+          <div class="qaItem">
+            <div class="qaQ">Melhor por AT</div>
+            <div class="qaA" id="qaBestAT">—</div>
+            <div class="qaS" id="qaBestATNote">—</div>
+          </div>
+          <div class="qaItem">
+            <div class="qaQ">Melhor por AC</div>
+            <div class="qaA" id="qaBestAC">—</div>
+            <div class="qaS" id="qaBestACNote">—</div>
+          </div>
+          <div class="qaItem">
+            <div class="qaQ">Acordo Expert × Modelo</div>
+            <div class="qaA" id="qaAgree">—</div>
+            <div class="qaS" id="qaAgreeNote">—</div>
+          </div>
+        </div>-->
+
+        <div class="tableWrap">
+          <table class="tbl" id="teamMatrix">
+            <thead>
+              <tr>
+                <th>Equipe</th>
+                <th>Rank<br><span class="mini">Expert</span></th>
+                <th>Rank<br><span class="mini">Modelo</span></th>
+                <th>Δ Rank<br><span class="mini">Modelo−Expert</span></th>
+                <th>Aptidão geral da equipe (AE)<br><span class="mini"> </span></th>
+                <th>Aptidão Técnica (AT)<br><span class="mini"> </span></th>
+                <th>Aptidão Colaborativa (AC)<br><span class="mini"> </span></th>
+                <th>Cobertura<br><span class="mini">% requisitos</span></th>
+                <th>Ponto forte</th>
+                <th>Ponto fraco</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="hint" style="margin-top:10px"></div>
+
+        <!-- ✅ NOVO: Radares sempre visíveis abaixo da tabela -->
+        <div id="radarsBelowTable" class="radarGrid2x" style="margin-top:10px"></div>
+
+      </div>
+    </section>
+
     <!-- LEFT -->
     <section class="card">
       <div class="hd">
@@ -695,13 +880,8 @@
                 </div>
               <div style="height:12px"></div>
 
-              <div class="barcard" style="margin-top:10px">
-                <div class="ttl">
-                  <strong>Radar por equipe (OSF / SLF / nº de projetos em comum)</strong>
-                  <span class="mini" id="projMetaRadar"></span>
-                </div>
-                <div id="radarGrid" class="radarGrid"></div>
-              </div>
+              
+
 
 
               <div class="barcard">
@@ -760,7 +940,7 @@
                     
                   </div>
 
-                  <div id="techTargetsText" class="mini" style="margin:-6px 0 6px 0;color:#9fb0c0"></div>
+                  
 
                   <svg id="projTechOcc" width="100%" height="420" viewBox="0 0 760 420"></svg>
                 </div>
@@ -953,6 +1133,11 @@ function attachNodeTooltips(){
       tip.style.display = "none";
     });
   }
+  document.querySelectorAll("details").forEach(d=>{
+    d.addEventListener("toggle", ()=>{
+      if (d.open) render();
+    });
+  });
 
   const els = document.querySelectorAll("[data-tooltip-id]");
   els.forEach(bind);
@@ -969,13 +1154,52 @@ const COLORS = ["#7aa2ff", "#62d26f", "#ffd166", "#ff6b6b", "#c77dff", "#4dd4ff"
    Trade-off charts (bar + line) — PATCH
    ======================= */
 
-// cor determinística por equipe (estável em todos os gráficos)
-function colorForTeamId(teamId){
-  const s = String(teamId ?? "");
-  let h = 0;
-  for (let i=0;i<s.length;i++) h = ((h * 31) + s.charCodeAt(i)) >>> 0;
-  return COLORS[h % COLORS.length];
+// === Cores por equipe (top-5): cada equipe mantém sua cor em todos os gráficos do projeto
+let _COLOR_PID = null;
+const _TEAM_COLOR = new Map();
+
+function _rebuildTeamColorsForProject(projectId){
+  _TEAM_COLOR.clear();
+  _COLOR_PID = String(projectId ?? "");
+
+  const rows = projectRows(projectId) || [];
+  const ordered = rows.slice().sort((a,b)=>{
+    const ra = safeParseFloat(a.rank_bn), rb = safeParseFloat(b.rank_bn);
+    if (Number.isFinite(ra) && Number.isFinite(rb) && ra !== rb) return ra - rb;
+    return teamKey(a).localeCompare(teamKey(b));
+  });
+
+  const seen = new Set();
+  const teams = [];
+  for (const r of ordered){
+    const t = teamKey(r);
+    if (!seen.has(t)){
+      seen.add(t);
+      teams.push(t);
+    }
+    if (teams.length >= 5) break;
+  }
+
+  teams.forEach((t, i)=>{
+    _TEAM_COLOR.set(String(t), COLORS[i % COLORS.length]);
+  });
 }
+
+// cor determinística por equipe no PROJETO atual (não “cinza”)
+function colorForTeamId(teamId){
+  const pid = $("projectSel") ? $("projectSel").value : null;
+  if (pid && String(pid) !== String(_COLOR_PID)) _rebuildTeamColorsForProject(pid);
+
+  const k = String(teamId ?? "");
+  if (_TEAM_COLOR.has(k)) return _TEAM_COLOR.get(k);
+
+  // fallback (caso apareça equipe fora do top-5)
+  const idx = _TEAM_COLOR.size % COLORS.length;
+  const c = COLORS[idx];
+  _TEAM_COLOR.set(k, c);
+  return c;
+}
+
 
 function numOrNaN(v){
   const n = safeParseFloat(v);
@@ -1332,6 +1556,23 @@ function nearestTier(x){
   }
   return best;
 }
+function trendIconFromTier(tier){
+  const t = String(tier || "").trim();
+  if (t === "VL" || t === "L")  return { sym:"▼", cls:"tri down", title:"Abaixo de M" };
+  if (t === "H"  || t === "VH") return { sym:"▲", cls:"tri up",   title:"Acima de M" };
+  if (t === "M")                return { sym:"●", cls:"tri mid",  title:"M (neutro)" };
+  return { sym:"", cls:"", title:"" };
+}
+
+function fmtWithTrend(v, d=6){
+  const num = fmt(v, d);
+  if (num === "—") return "—";
+  const tier = nearestTier(v).tier;                 // usa sua regra atual de tier
+  const ic = trendIconFromTier(tier);
+  if (!ic.sym) return num;
+  return `${num}<span class="${ic.cls}" title="${ic.title} (${tier})">${ic.sym}</span>`;
+}
+
 function oneHotDistFromTier(tier){
   const order = ["VL","L","M","H","VH"];
   const idx = order.indexOf(tier);
@@ -1787,25 +2028,25 @@ function renderBNGraph(row, dists){
   const lingC = compactNonZero(dists.ling);
 
   const dom = drawNodeWithBars(svg,{
-    x:50,y:0,w:smallW,h:smallH,title:"Domínio",
+    x:50,y:20,w:smallW,h:smallH,title:"Domínio ",
     dist: domC.dist, barLabels: domC.labels, maxValue: 1,
     metaLabel: dists.metaDom
   });
   const eco = drawNodeWithBars(svg,{
-    x:50,y:60,w:smallW,h:smallH,title:"Ecossistema",
+    x:50,y:80,w:smallW,h:smallH,title:"Ecossistema",
     dist: ecoC.dist, barLabels: ecoC.labels, maxValue: 1,
     metaLabel: dists.metaEco
   });
   const ling= drawNodeWithBars(svg,{
-    x:50,y:120,w:smallW,h:smallH,title:"Linguagens",
+    x:50,y:140,w:smallW,h:smallH,title:"Linguagens",
     dist: lingC.dist, barLabels: lingC.labels, maxValue: 1,
     metaLabel: dists.metaLing
   });
 
   // AT
   const at = drawNodeWithBars(svg,{
-    x: 520, y: 20, w: boxW_AT, h: boxH,
-    title:"AT (Aptidão Tecnológica)",
+    x: 520, y: 0, w: boxW_AT, h: boxH,
+    title:"Aptidão Técnica (AT)",
     dist: dists.at,
     funcLabel:"WMAX",
     weightsLabel:"(Dom=1, Eco=1, Ling=3)",
@@ -1819,12 +2060,12 @@ function renderBNGraph(row, dists){
   const pcScore = Number.isFinite(pcScoreRaw) ? clamp(pcScoreRaw, 0, 1) : 0;
 
   const pcEv = drawNodeWithBars(svg,{
-    x:520, y:280, w:360, h:boxH,     // ✅ PC à esquerda embaixo
-    title:"PC Score",
+    x:250, y:300, w:360, h:smallH+20,     // ✅ PC à esquerda embaixo
+    title:"Compatibilidade dos Pares (PC)",
     dist:[pcScore],
     barLabels:[pcLab],
     maxValue:1,
-    metaLabel:(pcScore*100).toFixed(0) + "%"
+    
   });
 
   // AC (nó explícito)
@@ -1834,8 +2075,8 @@ function renderBNGraph(row, dists){
     : pcLab;
 
   const acNode = drawNodeWithBars(svg,{
-    x:900, y:280, w:360, h:boxH,     // ✅ AC ao lado do PC
-    title:"AC (Aptidão Colaborativa)",
+    x:760, y:280, w:360, h:boxH,     // ✅ AC ao lado do PC
+    title:"Aptidão Colaborativa (AC)",
     dist: dists.ac,
     //funcLabel:"",
     //weightsLabel:"",
@@ -1845,8 +2086,8 @@ function renderBNGraph(row, dists){
 
   // AE
   const ae = drawNodeWithBars(svg,{
-    x: 1280, y: 60, w: boxW, h: boxH,
-    title:"AE (Aptidão da Equipe)",
+    x: 1280, y: 30, w: boxW, h: boxH,
+    title:"Aptidão geral da Equipe (AE)",
     dist: dists.ae,
     funcLabel:"WMIN",
     weightsLabel:"(AT=3, AC=1)",
@@ -1860,7 +2101,7 @@ function renderBNGraph(row, dists){
   drawArrow(svg, ling.x+ling.w,ling.y+smallH/2, at.x, at.y+boxH*0.70);
 
   // ✅ setas PC -> AC -> AE
-  drawArrow(svg, pcEv.x+pcEv.w,   pcEv.y+boxH/2, acNode.x, acNode.y+boxH/2);
+  drawArrow(svg, pcEv.x+pcEv.w,   pcEv.y+smallH/2, acNode.x, acNode.y+smallH/2);
   drawArrow(svg, acNode.x+acNode.w, acNode.y+boxH/2, ae.x, ae.y+boxH/2 + 24);
 
   // AT -> AE
@@ -2230,6 +2471,228 @@ function renderProjectStrip(projectId, row){
   renderProjectRankBoard(projectId, row);
 }
 
+
+/* ===========================
+   V9: Quick Answers + Matrix
+   =========================== */
+
+function firstNumber(row, keys, fallback=NaN){
+  for(const k of keys){
+    const v = safeParseFloat(row[k]);
+    if(Number.isFinite(v)) return v;
+  }
+  return fallback;
+}
+function projectRows(projectId){
+  return (DATA||[]).filter(r => String(r.projeto_id||r.project_id||"")===String(projectId));
+}
+function metricAT(row){
+  return firstNumber(row, ["AT_cont","AT_cont.1"], 0);
+}
+function metricAC(row){
+  const pc = safeParseFloat(row.pc_score);
+  if(Number.isFinite(pc)) return clamp(pc, 0, 1);
+  return firstNumber(row, ["AC_cont","AC_cont.1"], 0);
+}
+function metricAE(row){
+  return firstNumber(row, ["ae_bn_mean","AE_mean","AE","AE_cont","AE_cont.1"], 0);
+}
+function metricRankExpert(row){
+  return safeInt(row.rank_expert);
+}
+function metricRankModel(row){
+  return safeInt(row.rank_bn);
+}
+function metricCoveragePct(row){
+  const totals = [
+    safeInt(row.dominio_m_total), safeInt(row.dominio_s_total), safeInt(row.dominio_c_total),
+    safeInt(row.ecossistema_m_total), safeInt(row.ecossistema_s_total), safeInt(row.ecossistema_c_total),
+    safeInt(row.linguagens_m_total), safeInt(row.linguagens_s_total), safeInt(row.linguagens_c_total),
+  ];
+  const covers = [
+    safeInt(row.dominio_m_covered), safeInt(row.dominio_s_covered), safeInt(row.dominio_c_covered),
+    safeInt(row.ecossistema_m_covered), safeInt(row.ecossistema_s_covered), safeInt(row.ecossistema_c_covered),
+    safeInt(row.linguagens_m_covered), safeInt(row.linguagens_s_covered), safeInt(row.linguagens_c_covered),
+  ];
+  const t = totals.reduce((a,b)=>a+b,0);
+  const c = covers.reduce((a,b)=>a+b,0);
+  return t>0 ? (c/t) : 0;
+}
+function argmax(arr, get){
+  let best = null, bestV = -Infinity;
+  for(const x of arr){
+    const v = get(x);
+    if(v>bestV){ bestV=v; best=x; }
+  }
+  return best;
+}
+function argmin(arr, get){
+  let best = null, bestV = Infinity;
+  for(const x of arr){
+    const v = get(x);
+    if(v<bestV){ bestV=v; best=x; }
+  }
+  return best;
+}
+function renderQuickAnswers(projectId){
+  const rows = projectRows(projectId);
+  if(!rows.length) return;
+
+  const bestAE = argmax(rows, r=>metricAE(r));
+  const bestAT = argmax(rows, r=>metricAT(r));
+  const bestAC = argmax(rows, r=>metricAC(r));
+
+  // Acordo: quantos Δrank==0 e erro médio absoluto
+  const deltas = rows.map(r => metricRankModel(r) - metricRankExpert(r));
+  const matches = deltas.filter(d=>d===0).length;
+  const maeRank = deltas.reduce((a,b)=>a+Math.abs(b),0) / Math.max(1,deltas.length);
+  
+  // NOVO: match com diferença de até 1 posição (|Δrank| <= 1)
+  const matches_pm1 = deltas.filter(d => Math.abs(d) <= 1).length;
+
+  // NOVO: Top-1 (suporta empates no expert e/ou no modelo)
+  const expRanks = rows.map(r => metricRankExpert(r)).filter(v => v > 0);
+  const modRanks = rows.map(r => metricRankModel(r)).filter(v => v > 0);
+
+  const expBest = expRanks.length ? Math.min(...expRanks) : 1;
+  const modBest = modRanks.length ? Math.min(...modRanks) : 1;
+
+  const expTop = new Set(rows.filter(r => metricRankExpert(r) === expBest).map(r => teamKey(r)));
+  const modTop = new Set(rows.filter(r => metricRankModel(r) === modBest).map(r => teamKey(r)));
+
+  const top1_hit = [...expTop].some(t => modTop.has(t));
+
+  // (extra útil p/ leitura) posição do melhor do expert no ranking do modelo
+  const best_pos = Math.min(...rows
+    .filter(r => metricRankExpert(r) === expBest)
+    .map(r => metricRankModel(r))
+    .filter(v => v > 0)
+  );
+
+  setText("qaSubtitle", `Projeto ${projectId} • 5 equipes`);
+  setText("qaBestAE", `${teamKey(bestAE)} (AE=${fmt(metricAE(bestAE), 6)})`);
+  setText("qaBestAENote", `Modelo escolheu esta como #1 (rank_bn=${metricRankModel(bestAE) || "—"})`);
+
+  setText("qaBestAT", `${teamKey(bestAT)} (AT=${fmt(metricAT(bestAT), 6)})`);
+  setText("qaBestATNote", `Maior aptidão técnica entre as 5 equipes`);
+
+  setText("qaBestAC", `${teamKey(bestAC)} (AC=${fmt(metricAC(bestAC), 6)})`);
+  setText("qaBestACNote", `Maior aptidão colaborativa entre as 5 equipes`);
+
+  const top1Txt = top1_hit ? "sim" : "não";
+  const bestPosTxt = Number.isFinite(best_pos) ? `${best_pos}º` : "—";
+
+  const NBSP = "\u00A0";
+  setText("qaAgree",
+    `${matches}/5 Matchs exatos.${NBSP}${NBSP}|${NBSP}${NBSP}Acertou o Top-1? ${top1Txt} (${bestPosTxt})${NBSP}${NBSP}|${NBSP}${NBSP}Erros de ±1 posição: ${matches_pm1}/5`
+  );
+
+  setText("qaAgreeNote", `Erro médio |Δrank| = ${maeRank.toFixed(2)} (0 é perfeito)`);
+}
+
+function renderTeamMatrix(projectId){
+  const table = document.getElementById("teamMatrix");
+  if(!table) return;
+  const tbody = table.querySelector("tbody");
+  if(!tbody) return;
+
+  const rows = projectRows(projectId);
+  if(!rows.length){
+    tbody.innerHTML = "";
+    return;
+  }
+
+  // métricas para normalização (0..1)
+  const vals = rows.map(r=>({
+    row:r,
+    team: teamKey(r),
+    ae: metricAE(r),
+    at: metricAT(r),
+    ac: metricAC(r),
+    cov: metricCoveragePct(r),
+    rex: metricRankExpert(r),
+    rbn: metricRankModel(r),
+  }));
+
+  const mm = (key)=>{
+    const arr = vals.map(v=>v[key]).filter(Number.isFinite);
+    const mn = Math.min(...arr);
+    const mx = Math.max(...arr);
+    return {mn, mx};
+  };
+  const mmAE = mm("ae"), mmAT = mm("at"), mmAC = mm("ac"), mmC = mm("cov");
+
+  function norm(v, mn, mx){
+    if(!Number.isFinite(v)) return 0;
+    if(mx<=mn) return 0.5;
+    return clamp((v-mn)/(mx-mn), 0, 1);
+  }
+
+  const metricDefs = [
+    {k:"ae", label:"AE"},
+    {k:"at", label:"AT"},
+    {k:"ac", label:"AC"},
+    {k:"cov", label:"Cobertura"},
+  ];
+
+  // ordena pela posição do modelo (mais natural pra leitura do painel)
+  vals.sort((a,b)=> (a.rbn||999) - (b.rbn||999));
+
+  tbody.innerHTML = vals.map(v=>{
+    const delta = (v.rbn||0) - (v.rex||0);
+    const deltaCls = delta===0 ? "ok" : "bad";
+
+    const nAE = norm(v.ae, mmAE.mn, mmAE.mx);
+    const nAT = norm(v.at, mmAT.mn, mmAT.mx);
+    const nAC = norm(v.ac, mmAC.mn, mmAC.mx);
+    const nC  = norm(v.cov, mmC.mn, mmC.mx);
+
+    const scores = {ae:nAE, at:nAT, ac:nAC, cov:nC};
+    let bestK = "ae", worstK = "ae", bestV = -1, worstV = 2;
+    for(const m of metricDefs){
+      const s = scores[m.k];
+      if(s>bestV){ bestV=s; bestK=m.k; }
+      if(s<worstV){ worstV=s; worstK=m.k; }
+    }
+    const bestLabel  = metricDefs.find(x=>x.k===bestK)?.label || bestK;
+    const worstLabel = metricDefs.find(x=>x.k===worstK)?.label || worstK;
+
+    // mini bars (sutis)
+    const bar = (p, sel=false)=>`<div class="miniBar ${sel?"sel":""}"><span style="width:${Math.round(p*100)}%"></span></div>`;
+
+    const trCls = "clickRow";
+    return `
+      <tr class="${trCls}" data-team="${escapeHtml(String(v.team))}">
+        <td class="mono">${escapeHtml(String(v.team))}</td>
+        <td class="mono">${v.rex || "—"}</td>
+        <td class="mono">${v.rbn || "—"}</td>
+        <td class="mono"><span class="delta ${deltaCls}">${(delta===0)? "0" : (delta>0? ("+"+delta) : String(delta))}</span></td>
+
+        <td class="mono">${fmtWithTrend(v.ae, 6)}${bar(nAE, v.team===teamKey(currentRow()))}</td>
+        <td class="mono">${fmtWithTrend(v.at, 6)}${bar(nAT, v.team===teamKey(currentRow()))}</td>
+        <td class="mono">${fmtWithTrend(v.ac, 6)}${bar(nAC, v.team===teamKey(currentRow()))}</td>
+
+        <td class="mono">${Math.round(v.cov*100)}%${bar(nC, v.team===teamKey(currentRow()))}</td>
+
+        <td><span class="badge good">${escapeHtml(bestLabel)}</span></td>
+        <td><span class="badge bad">${escapeHtml(worstLabel)}</span></td>
+      </tr>
+    `;
+  }).join("");
+
+  // click -> seleciona equipe
+  tbody.querySelectorAll("tr[data-team]").forEach(tr=>{
+    tr.addEventListener("click", ()=>{
+      const t = tr.getAttribute("data-team");
+      const sel = $("teamSel");
+      if(sel){
+        sel.value = t;
+        render();
+      }
+    });
+  });
+}
+
 function render(){
   const row = currentRow();
   if (!row){ return; }
@@ -2255,9 +2718,9 @@ function render(){
 
 
   // KPIs
-  setText("kpiAE", fmt(ae, 6));
-  setText("kpiAT", fmt(at, 6));
-  setText("kpiAC", fmt(ac, 6));
+  setText("kpiAE", fmtWithTrend(ae, 6));
+  setText("kpiAT", fmtWithTrend(at, 6));
+  setText("kpiAC", fmtWithTrend(ac, 6));
 
   const aeTier = nearestTier(ae);
   setHTML("kpiAETier", `<span class="mono">${aeTier.tier}</span> `);
@@ -2354,8 +2817,12 @@ function render(){
 
   // Comparativo do projeto (todas as equipes)
   const pid = (document.getElementById('projectSel') ? document.getElementById('projectSel').value : null);
+  if (pid) renderQuickAnswers(pid);
+  if (pid) renderTeamMatrix(pid);
   if (pid) renderProjectComparison(pid);
-  if (pid) renderProjectStrip(pid, row);
+  if (pid) renderRadarsBelowTable(pid);
+
+  /* if (pid) renderProjectStrip(pid, row);  // V9: removido (polui a leitura) */
   if (pid) renderProjectTradeCharts(pid);
 
 
@@ -2579,7 +3046,11 @@ function drawProjectGrouped(svg, teams){
 
   // Mais compacto (e evita texto sobreposto quando as barras ficam finas)
   const padL=66, padR=16, padT=18, padB=28;
-  const innerW=W-padL-padR, innerH=H-padT-padB;
+  const widthFactor = (svg.id === "projPC") ? 0.32 : 1.0; // encurta barras só no painel PC
+  const innerW0 = W-padL-padR;
+  const innerW  = innerW0 * widthFactor, innerH = H-padT-padB;
+  const xEnd = padL + innerW;
+
 
   const tiers=["VL","L","M","H","VH"];
   const rowH = innerH/tiers.length;
@@ -2612,11 +3083,11 @@ function drawProjectGrouped(svg, teams){
 
     svg.appendChild(svgEl("line",{
       x1:padL, y1:padT+r*rowH,
-      x2:W-padR, y2:padT+r*rowH,
+      x2:xEnd, y2:padT+r*rowH,
       stroke:"#eef2f7"
     }));
   }
-  svg.appendChild(svgEl("line",{x1:padL,y1:padT+innerH,x2:W-padR,y2:padT+innerH,stroke:"#d7dde6"}));
+  svg.appendChild(svgEl("line",{x1:padL,y1:padT+innerH,x2:xEnd,y2:padT+innerH,stroke:"#d7dde6"}));
 
   // barras (por faixa, com uma barra por equipe)
   for (let r=0;r<tiers.length;r++){
@@ -2741,60 +3212,92 @@ function extractTeamCollabStats(obj){
   const det  = (typeof getDetailsForRow === "function") ? getDetailsForRow(base) : null;
   const row  = det || base;
 
+  // Junta as notas com o bloco "Colaboração (somente com membros desta equipe)"
   const cols = ["note_dev1","note_dev2","note_dev3","note_dev4","note_dev5"];
   const txt = cols
     .map(c => (row && row[c]) ? String(row[c]) : "")
     .filter(s => s && s.trim())
     .join("\n");
 
-  // PIDs distintos (Proj)
-  const pidSet = new Set((txt.match(/\bP\d+\b/gi) || []).map(p => p.toUpperCase()));
+  // Total de pares (nC2) calculado pelo team_str: [Dev169;Dev27;...]
+  const teamStr = String(base.team_str || base.team || base.team_id || "");
+  const devIds = Array.from(teamStr.matchAll(/Dev\s*(\d+)/gi)).map(m => m[1]);
+  const nDevs = new Set(devIds).size;
+  let pairsTotal = (nDevs>=2) ? (nDevs*(nDevs-1)/2) : 0;
 
-  // Mapa PID -> {osf, slf} (dedup)
-  const pidMap = new Map();
-  const re = /\b(P\d+)\b\s*\([^)]*?\bosf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)[^)]*?\bslf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)/gi;
+  // pairKey -> Map(PID -> {osf, slf})  (dedup por par + PID)
+  const pairMap = new Map();
+  const lineRe = /(\d+)\s*-\s*(\d+)\s*:\s*([^\n\r]+)/g;
+  const projRe = /\b(P\d+)\b\s*\([^)]*?\bosf\b\s*=\s*([0-9]*[.,]?[0-9]+)[^)]*?\bslf\b\s*=\s*([0-9]*[.,]?[0-9]+)/gi;
 
-  for (const m of txt.matchAll(re)){
-    const pid = String(m[1]).toUpperCase();
-    const osf = parseFloat(String(m[2]).replace(",", "."));
-    const slf = parseFloat(String(m[3]).replace(",", "."));
-    if (Number.isFinite(osf) && Number.isFinite(slf) && !pidMap.has(pid)){
-      pidMap.set(pid, { osf, slf }); // pega o 1º e ignora duplicatas
+  for (const m of txt.matchAll(lineRe)){
+    const a = String(m[1]), b = String(m[2]);
+    const k = (Number(a) < Number(b)) ? `${a}-${b}` : `${b}-${a}`;
+    const rest = String(m[3] || "").trim();
+
+    if (!pairMap.has(k)) pairMap.set(k, new Map());
+    const pidStore = pairMap.get(k);
+
+    // SEM_COMUM => 0 projetos
+    if (/SEM_COMUM/i.test(rest)) continue;
+
+    // Primeiro tenta o formato mais completo: P123(...osf=...,slf=...)
+    let any = false;
+    for (const mm of rest.matchAll(projRe)){
+      any = true;
+      const pid = String(mm[1]).toUpperCase();
+      if (pidStore.has(pid)) continue;
+      const osf = parseFloat(String(mm[2]).replace(",", "."));
+      const slf = parseFloat(String(mm[3]).replace(",", "."));
+      pidStore.set(pid, { osf, slf });
+    }
+
+    // Fallback: pega só PIDs (sem osf/slf) se necessário
+    if (!any){
+      for (const mm of rest.matchAll(/\b(P\d+)\b/gi)){
+        const pid = String(mm[1]).toUpperCase();
+        if (!pidStore.has(pid)) pidStore.set(pid, { osf: NaN, slf: NaN });
+      }
     }
   }
 
-  // OSF/SLF por PID (único).
-  let osfMean = 0, slfMean = 0;
+  if (!pairsTotal) pairsTotal = pairMap.size;
 
-  if (pidMap.size){
-    let so = 0, ss = 0;
-    for (const v of pidMap.values()){
-      so += v.osf; ss += v.slf;
+  // também mantém compatibilidade com código antigo: PIDs únicos (Proj em comum)
+  const pidUnion = new Set();
+  for (const pidStore of pairMap.values()){
+    for (const pid of pidStore.keys()) pidUnion.add(pid);
+  }
+  const nCommon = pidUnion.size;
+
+  let pairsWithHistory = 0;
+  let projSum = 0;
+  const osfVals = [];
+  const slfVals = [];
+
+  for (const pidStore of pairMap.values()){
+    const nProj = pidStore.size;
+    if (nProj>0){
+      pairsWithHistory += 1;
+      projSum += nProj;
+      for (const v of pidStore.values()){
+        if (Number.isFinite(v.osf)) osfVals.push(v.osf);
+        if (Number.isFinite(v.slf)) slfVals.push(v.slf);
+      }
     }
-    osfMean = so / pidMap.size;
-    slfMean = ss / pidMap.size;
-  } else {
-    // fallback se não houver PIDs com osf/slf
-    const osfs = [];
-    const slfs = [];
-    for (const m of txt.matchAll(/\bosf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)/gi)){
-      const v = parseFloat(String(m[1]).replace(",", "."));
-      if (Number.isFinite(v)) osfs.push(v);
-    }
-    for (const m of txt.matchAll(/\bslf\b\s*[:=]\s*([0-9]*[.,]?[0-9]+)/gi)){
-      const v = parseFloat(String(m[1]).replace(",", "."));
-      if (Number.isFinite(v)) slfs.push(v);
-    }
-    osfMean = osfs.length ? (osfs.reduce((a,b)=>a+b,0)/osfs.length) : 0;
-    slfMean = slfs.length ? (slfs.reduce((a,b)=>a+b,0)/slfs.length) : 0;
   }
 
-  return { osfMean, slfMean, nCommon: pidSet.size };
+  const osfMean = osfVals.length ? (osfVals.reduce((a,b)=>a+b,0)/osfVals.length) : 0;
+  const slfMean = slfVals.length ? (slfVals.reduce((a,b)=>a+b,0)/slfVals.length) : 0;
+
+  return { osfMean, slfMean, pairsWithHistory, pairsTotal, projSum, nCommon };
 }
 
 
 
-function drawRadar(svg, values, labels, color){
+
+function drawRadar(svg, values, labels, color, valueTexts){
+
   if(!svg) return;
   svgClear(svg);
 
@@ -2829,14 +3332,37 @@ function drawRadar(svg, values, labels, color){
     svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:p.x, y2:p.y, stroke:"#cbd5e1", "stroke-width":"1" }));
   }
 
-  // labels
+  // labels (+ valores na ponta)
+  // labels (+ valores na ponta)
   for (let i=0; i<N; i++){
-    const p = pt(i,1.18);
-    const t = svgEl("text", { x:p.x, y:p.y, fill:"#475569", "font-size":"16", "font-family":"ui-monospace" });
-    t.setAttribute("text-anchor", (p.x < cx-10) ? "end" : (p.x > cx+10 ? "start" : "middle"));
-    t.textContent = labels[i];
-    svg.appendChild(t);
+    const p = pt(i,1.20);
+    const anchor = (p.x < cx-10) ? "end" : (p.x > cx+10 ? "start" : "middle");
+
+    // rótulo
+    const tLab = svgEl("text", { x:p.x, y:p.y, fill:"#475569", "font-size":"24", "font-family":"ui-monospace" });
+    tLab.setAttribute("text-anchor", anchor);
+    tLab.textContent = labels[i];
+    svg.appendChild(tLab);
+
+    // valores (suporta quebra de linha com \n)
+    if (valueTexts && valueTexts[i]!=null && String(valueTexts[i]).trim()!==""){
+      const lines = String(valueTexts[i]).split("\n");
+      lines.forEach((line, j)=>{
+        const tVal = svgEl("text", {
+          x: p.x,
+          y: p.y + 22 + j*18,
+          fill: "#0f172a",
+          "font-size": "18",
+          "font-family": "ui-monospace"
+        });
+        tVal.setAttribute("text-anchor", anchor);
+        tVal.textContent = line;
+        svg.appendChild(tVal);
+      });
+    }
   }
+
+
 
   // polygon
   const poly = [];
@@ -2876,7 +3402,7 @@ function renderProjectRadars(projectId, orderedRows){
   const stats = top.map((r, idx)=>{
     const base = (r && r.row) ? r.row : r;
     const label = String(base.team_id || r.label || `TEAM${idx}`);
-    const color = COLORS[idx % COLORS.length];
+    const color = colorForTeamId(label);
     const s = extractTeamCollabStats(r); // aceita base ou objeto com .row
     return { label, color, row: base, ...s };
   });
@@ -2926,6 +3452,94 @@ function renderProjectRadars(projectId, orderedRows){
   });
 }
 
+function renderRadarsBelowTable(projectId){
+  const wrap = document.getElementById("radarsBelowTable");
+  if(!wrap) return;
+
+  wrap.innerHTML = "";
+
+  const rows = DATA.filter(r => String(r.projeto_id||"") === String(projectId));
+  if(!rows.length) return;
+
+  // top 5 equipes (mesma lógica da sua ordenação)
+  const ordered = rows.slice().sort((a,b)=>{
+    const ra = safeParseFloat(a.rank_bn), rb = safeParseFloat(b.rank_bn);
+    if(Number.isFinite(ra) && Number.isFinite(rb)) return ra-rb;
+    return teamKey(a).localeCompare(teamKey(b));
+  }).slice(0,5);
+
+    // estatísticas por equipe (OSF/SLF e pares com histórico)
+  const stats = ordered.map(r => extractTeamCollabStats(r));
+
+  function fmt2(x){
+    const n = Number(x);
+    return Number.isFinite(n) ? n.toFixed(2) : "0.00";
+  }
+
+  ordered.forEach((r, idx)=>{
+    const team = teamKey(r);
+    const color = colorForTeamId(team);
+
+    // radar 1: OSF / SLF / Pares com histórico (fração)
+    const s = stats[idx] || extractTeamCollabStats(r);
+    const fracPairs = (s.pairsTotal>0) ? (s.pairsWithHistory / s.pairsTotal) : 0;
+
+    const radar1Vals = [
+      clamp01(s.osfMean),
+      clamp01(s.slfMean),
+      clamp01(fracPairs)
+    ];
+
+    const projTxt = (s.projSum === 1) ? "1 proj" : `${s.projSum} proj`;
+
+    // 1ª linha: 1/6 pares
+    // 2ª linha: 3 proj
+    const pairsLabel = `${s.pairsWithHistory}/${s.pairsTotal} pares\n${projTxt}`;
+
+const radar1Txt = [ fmt2(s.osfMean), fmt2(s.slfMean), pairsLabel ];
+
+
+    // radar 2: DOM / ECO / LING (MUST) => covered/total e texto "1/2"
+    function must(prefix){
+      const total = safeInt(r[`${prefix}_m_total`]);
+      const cov   = safeInt(r[`${prefix}_m_covered`]);
+      return { ratio: (total>0 ? cov/total : 0), cov, total };
+    }
+
+    const dom = must("dominio");
+    const eco = must("ecossistema");
+    const lin = must("linguagens");
+
+    const radar2Vals = [
+      clamp01(dom.ratio),
+      clamp01(eco.ratio),
+      clamp01(lin.ratio)
+    ];
+    const radar2Txt = [
+      `${dom.cov}/${dom.total}`,
+      `${eco.cov}/${eco.total}`,
+      `${lin.cov}/${lin.total}`
+    ];
+
+    // monta HTML
+    const div = document.createElement("div");
+    div.className = "radarPair";
+    div.innerHTML = `
+      <div class="title mono">${team}</div>
+
+      <svg class="rad1" viewBox="0 0 220 220"></svg>
+      <svg class="rad2" viewBox="0 0 220 220" style="margin-top:6px"></svg>
+    `;
+    wrap.appendChild(div);
+
+    const rad1 = div.querySelector(".rad1");
+    const rad2 = div.querySelector(".rad2");
+
+    drawRadar(rad1, radar1Vals, ["OSF","SLF","Pares"], color, radar1Txt);
+    drawRadar(rad2, radar2Vals, ["DOM","ECO","LING"], color, radar2Txt);
+
+  });
+}
 
 function renderProjectComparison(projectId){
   if (!DATA || DATA.length===0) return;
@@ -2941,7 +3555,7 @@ function renderProjectComparison(projectId){
   const MAX_TEAMS = 5;
   const teams = ordered.slice(0, MAX_TEAMS).map((r, idx)=>{
     const label = String(r.team_id||`TEAM${idx}`);
-    const color = COLORS[idx % COLORS.length];
+    const color = colorForTeamId(label);
     const d = buildDistForRow(r);
     return { label, color, row: r, ...d }; // <-- adiciona row:r
   });
@@ -2969,7 +3583,7 @@ function renderProjectTech(projectId, teamsPrebuilt=null){
 
   const teams = teamsPrebuilt ?? rows.map((r, idx)=>{
     const label = String(r.team_id||`TEAM${idx}`);
-    const color = COLORS[idx % COLORS.length];
+    const color = colorForTeamId(label);
     const d = buildDistForRow(r);
     return {label,color,...d};
   });
@@ -3338,6 +3952,11 @@ function renderProjectTechOcc(projectId, teams){
 
   
 }
+document.querySelectorAll("details").forEach(d=>{
+  d.addEventListener("toggle", ()=>{
+    if (d.open) render();
+  });
+});
 
 
 </script>
