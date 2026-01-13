@@ -855,9 +855,9 @@
     <section class="card">
       <div class="hd">
         <strong>2) Rede (estrutura + pesos/funções)</strong>
-        <div class="pill">AT: <span class="mono">WMEAN</span> (Dom=3, Eco=1, Ling=5)</div>
-        <div class="pill">AC: <span class="mono">WMAX</span> </div>
-        <div class="pill">AE: <span class="mono">WMIN</span> (AT=5, AC=1)</div>
+        <div class="pill">AT: <span class="mono">WMEAN</span> Pesos: Dom=3, Eco=1, Ling=5 | sigma: 0.05</div>
+        
+        <div class="pill">AE: <span class="mono">WMIN</span> Pesos: AT=5, AC=1 | sigma: 0.05</div>
       </div>
       <div class="bd">
         <div class="split" style="grid-template-columns:1fr">
@@ -1028,43 +1028,47 @@ const CENTROIDS = [
 ];
 
 const DEFAULT_MODEL = {
-  AT: { func: "WMAX", weights: { Dom: 1, Eco: 1, Ling: 3 } },
-  AC: { func: "WMAX", weights: { PC_VL: 1, PC_L: 2, PC_M: 5, PC_H: 1, PC_VH: 5 } },
-  AE: { func: "WMIN", weights: { AT: 3, AC: 1 } }
+  AT: { func: "WMEAN", sigma: 0.05, weights: { Dom: 3, Eco: 1, Ling: 5 } },
+  AC: { evidence: "pc_score" },
+  AE: { func: "WMIN",  sigma: 0.05, weights: { AT: 5, AC: 1 } }
 };
+
 
 /* Tooltips (aparecem ao passar o mouse nos nós AT/AC/AE) */
 const TOOLTIP_TEMPLATES = {
-  TT_AT: () => ({
-    title: "AT — Technological Fit",
+    TT_AT: () => ({
+    title: "AT — Technical Fit",
     lines: [
       `Função: ${DEFAULT_MODEL.AT.func}`,
       `Pesos: Dom=${DEFAULT_MODEL.AT.weights.Dom}, Eco=${DEFAULT_MODEL.AT.weights.Eco}, Ling=${DEFAULT_MODEL.AT.weights.Ling}`,
+      `σ_AT=${DEFAULT_MODEL.AT.sigma}`,
       "Fórmula:",
-      `\\[ S = \\sum_{j=1}^{n} x_j \\]`,
-      `\\[ e_i = \\frac{w_i x_i + \\sum_{j \\ne i} x_j}{w_i + (n-1)} \\]`,
-      `\\[ \\mathrm{WMAX}(x,w) = \\max_i e_i \\]`
-    ],
-    note: "Aqui, x_i é o score (0–1) de Dom/Eco/Ling. Se x_i vier como vetor (amostras), o max é posição a posição."
-  }),
-  TT_AC: () => ({
-    title: "AC — Collaboration Fit",
-    lines: [
-      `Função: ${DEFAULT_MODEL.AC.func}`,
-      `Pesos: PC_VL=${DEFAULT_MODEL.AC.weights.PC_VL}, PC_L=${DEFAULT_MODEL.AC.weights.PC_L}, PC_M=${DEFAULT_MODEL.AC.weights.PC_M}, PC_H=${DEFAULT_MODEL.AC.weights.PC_H}, PC_VH=${DEFAULT_MODEL.AC.weights.PC_VH}`,
-      "Fórmula:",
-      `\\[ S = \\sum_{j=1}^{n} x_j \\]`,
-      `\\[ e_i = \\frac{w_i x_i + \\sum_{j \\ne i} x_j}{w_i + (n-1)} \\]`,
-      `\\[ \\mathrm{WMAX}(x,w) = \\max_i e_i \\]`
+      `\\[ \\text{soma\\_valores} = \\sum_{i=1}^{n} w_i\\,x_i \\]`,
+      `\\[ \\text{soma\\_pesos} = \\sum_{i=1}^{n} w_i \\]`,
+      `\\[ \\mathrm{WMEAN}(x,w) = \\frac{\\text{soma\\_valores}}{\\text{soma\\_pesos}} \\]`
 
     ],
-    note: "Aqui, x_i vem da evidência de colaboração (ex.: PC_VL..PC_VH, ou depois sua transformação para valor 0–1)."
+    note: "Aqui, x_i é o score (0–1) de Dom/Eco/Ling."
   }),
+
+  TT_AC: () => ({
+  title: "AC — Collaboration Fit",
+  lines: [
+    
+    `Evidência: ${DEFAULT_MODEL.AC.evidence} ∈ [0,1]`,
+    "Interpretação:",
+    "pc_score=0 → colaboração muito baixa; pc_score=1 → muito alta."
+  ]
+  
+}),
+
   TT_AE: () => ({
     title: "AE — Team Fit",
     lines: [
       `Função: ${DEFAULT_MODEL.AE.func}`,
       `Pesos: AT=${DEFAULT_MODEL.AE.weights.AT}, AC=${DEFAULT_MODEL.AE.weights.AC}`,
+      `σ_AE=${DEFAULT_MODEL.AE.sigma}`,
+
       "Fórmula:",
        `\\[ S = \\sum_{j=1}^{n} x_j \\]`,
       `\\[ e_i = \\frac{w_i\\,x_i + (S - x_i)}{w_i + (n - 1)} \\]`,
@@ -1886,7 +1890,7 @@ function drawNodeWithBars(svg, {x,y,w,h,title,dist, funcLabel=null, weightsLabel
   g.appendChild(t);
 
   if (metaLabel){
-    const meta = svgEl("text",{x:x+w-12,y:y+26,"text-anchor":"end",fill:"#6b7280","font-size":"20","font-family":"ui-monospace"});
+    const meta = svgEl("text",{x:x+w-75,y:y+46,"text-anchor":"end",fill:"#6b7280","font-size":"20","font-family":"ui-monospace"});
     meta.textContent = metaLabel;
     g.appendChild(meta);
   }
@@ -2043,49 +2047,33 @@ function renderBNGraph(row, dists){
     x: 520, y: 0, w: boxW_AT, h: boxH,
     title:"Aptidão Técnica (AT)",
     dist: dists.at,
-    funcLabel:"WMAX",
-    weightsLabel:"(Dom=1, Eco=1, Ling=3)",
+    funcLabel: DEFAULT_MODEL.AT.func,
+    weightsLabel: `(Dom=${DEFAULT_MODEL.AT.weights.Dom}, Eco=${DEFAULT_MODEL.AT.weights.Eco}, Ling=${DEFAULT_MODEL.AT.weights.Ling}, σ=${DEFAULT_MODEL.AT.sigma})`,
     metaLabel:"",
     tooltipId:"TT_AT"
   });
 
-  // PC (evidência)
-  const pcLab = String(dists.pcLabel ?? "").trim() || "PC";
-  const pcScoreRaw = safeParseFloat(dists.pcScore);
-  const pcScore = Number.isFinite(pcScoreRaw) ? clamp(pcScoreRaw, 0, 1) : 0;
+ 
+// AC (agora é evidência direta via pc_score)
+const pcScoreRaw = safeParseFloat(dists.pcScore);
+const pcScore = Number.isFinite(pcScoreRaw) ? clamp(pcScoreRaw, 0, 1) : 0;
 
-  const pcEv = drawNodeWithBars(svg,{
-    x:250, y:300, w:360, h:smallH+20,     // ✅ PC à esquerda embaixo
-    title:"Compatibilidade dos Pares (PC)",
-    dist:[pcScore],
-    barLabels:[pcLab],
-    maxValue:1,
-    
-  });
+const acNode = drawNodeWithBars(svg,{
+  x:760, y:280, w:360, h:boxH,
+  title:"Aptidão Colaborativa (AC)",
+  dist: dists.ac,
+  metaLabel: `Evidência: pc_score=${pcScore.toFixed(2)}`,
+  tooltipId:"TT_AC"
+});
 
-  // AC (nó explícito)
-  const acMean = distMean(dists.ac);
-  const acMeta = Number.isFinite(acMean)
-    ? `${pcLab} ${(acMean*100).toFixed(0)}%`
-    : pcLab;
-
-  const acNode = drawNodeWithBars(svg,{
-    x:760, y:280, w:360, h:boxH,     // ✅ AC ao lado do PC
-    title:"Aptidão Colaborativa (AC)",
-    dist: dists.ac,
-    //funcLabel:"",
-    //weightsLabel:"",
-    //metaLabel: acMeta,
-    tooltipId:""
-  });
 
   // AE
   const ae = drawNodeWithBars(svg,{
     x: 1280, y: 30, w: boxW, h: boxH,
     title:"Aptidão geral da Equipe (AE)",
     dist: dists.ae,
-    funcLabel:"WMIN",
-    weightsLabel:"(AT=3, AC=1)",
+    funcLabel: DEFAULT_MODEL.AE.func,
+    weightsLabel: `(AT=${DEFAULT_MODEL.AE.weights.AT}, AC=${DEFAULT_MODEL.AE.weights.AC}, σ=${DEFAULT_MODEL.AE.sigma})`,
     metaLabel:"",
     tooltipId:"TT_AE"
   });
@@ -2095,9 +2083,9 @@ function renderBNGraph(row, dists){
   drawArrow(svg, eco.x+eco.w,  eco.y+smallH/2,  at.x, at.y+boxH*0.50);
   drawArrow(svg, ling.x+ling.w,ling.y+smallH/2, at.x, at.y+boxH*0.70);
 
-  // ✅ setas PC -> AC -> AE
-  drawArrow(svg, pcEv.x+pcEv.w,   pcEv.y+smallH/2, acNode.x, acNode.y+smallH/2);
+  // ✅ setas AC -> AE
   drawArrow(svg, acNode.x+acNode.w, acNode.y+boxH/2, ae.x, ae.y+boxH/2 + 24);
+
 
   // AT -> AE
   drawArrow(svg, at.x+at.w, at.y+boxH/2, ae.x, ae.y+boxH/2 - 24);
@@ -3392,29 +3380,75 @@ function drawRadar(svg, values, labels, color, valueTexts){
     }
   }
 
-  // polygon
-  const poly = [];
+  // polygon (1 série = radar1 normal; 3 séries = radar2: MUST/SHOULD/COULD)
+const series = (Array.isArray(values) && Array.isArray(values[0])) ? values : [values];
+
+// helper: cria pontos, com opção de offset radial (para "encostar" uma linha na outra)
+function buildPolyPoints(vals, radialOffset=0){
+  const pts = [];
   for (let i=0; i<N; i++){
-    const v = clamp01(values[i]);
+    const v0 = clamp01(vals[i]);
+    const v  = clamp01(v0 + radialOffset); // offset pequeno p/ COULD ficar "ao lado"
     const p = pt(i, v);
-    poly.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+    pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
   }
+  return pts.join(" ");
+}
+
+if (!isRad2){
+  // RADAR1 (OSF/SLF/Pares): SEMPRE área (como era)
+  const pts = buildPolyPoints(series[0], 0);
   svg.appendChild(svgEl("polygon", {
-    points: poly.join(" "),
+    points: pts,
     fill: color,
-    opacity: isRad2 ? "0.40" : "0.50",
+    opacity: "0.25",
     stroke: color,
-    "stroke-width":"2"
+    "stroke-width": "2.2",
+    "stroke-linecap":"round",
+    "stroke-linejoin":"round"
+  }));
+} else {
+  // RADAR2 (DOM/ECO/LING): MUST área, SHOULD linha cor, COULD linha cinza "encostada"
+  const must   = series[0] || [0,0,0];
+  const should = series[1] || [0,0,0];
+  const could  = series[2] || [0,0,0];
+
+  // 1) MUST = área (visível) — aqui é onde DOM 1/2 vira "meia área"
+  svg.appendChild(svgEl("polygon", {
+    points: buildPolyPoints(must, 0),
+    fill: color,
+    opacity: "0.22",
+    stroke: color,
+    "stroke-width": "1.8",
+    "stroke-linecap":"round",
+    "stroke-linejoin":"round"
   }));
 
-  // vertices
-  for (let i=0; i<N; i++){
-    const v = clamp01(values[i]);
-    const p = pt(i, v);
-    svg.appendChild(svgEl("circle", { cx:p.x, cy:p.y, r: isRad2 ? "2.8" : "3.4", fill: color }));
-  }
-  svg.appendChild(svgEl("circle", { cx, cy, r: isRad2 ? "2.0" : "2.2", fill:"#0b1220" }));
+  // 2) COULD = linha cinza "ao lado" da linha do SHOULD (offset pequeno p/ separar)
+  const COULD_OFFSET = -0.015; // puxa levemente pra dentro (encostado no SHOULD)
+  svg.appendChild(svgEl("polygon", {
+    points: buildPolyPoints(could, COULD_OFFSET),
+    fill: "none",
+    stroke: "#9ca3af",
+    opacity: "0.95",
+    "stroke-width": "3.4",
+    "stroke-linecap":"round",
+    "stroke-linejoin":"round"
+  }));
+
+  // 3) SHOULD = linha contínua na cor da equipe (por cima da cinza)
+  svg.appendChild(svgEl("polygon", {
+    points: buildPolyPoints(should, 0),
+    fill: "none",
+    stroke: color,
+    opacity: "1.0",
+    "stroke-width": "2.2",
+    "stroke-linecap":"round",
+    "stroke-linejoin":"round"
+  }));
 }
+}
+
 
 renderTierOnly(domContainer, "Domínio (DOM)", row.dominio_tier, row.dominio_score);
 renderTierOnly(ecoContainer, "Ecossistema (ECO)", row.ecossistema_tier, row.ecossistema_score);
@@ -3546,10 +3580,13 @@ function renderRadarsBelowTable(projectId){
       const s_cov = safeInt(r[`${prefix}_s_covered`]);
       const c_cov = safeInt(r[`${prefix}_c_covered`]);
 
-      const ratio_m = (m_total > 0) ? (m_cov / m_total) : 0; // radar usa isso
+      const ratio_m = (m_total > 0) ? (m_cov / m_total) : 0;
+      const ratio_s = (s_total > 0) ? (s_cov / s_total) : 0;
+      const ratio_c = (c_total > 0) ? (c_cov / c_total) : 0;
 
-      return { ratio_m, m_cov, m_total, s_cov, s_total, c_cov, c_total };
+      return { ratio_m, ratio_s, ratio_c, m_cov, m_total, s_cov, s_total, c_cov, c_total };
     }
+
 
     function fmtMSC(x){
       return `M ${x.m_cov}/${x.m_total}\nS ${x.s_cov}/${x.s_total}\nC ${x.c_cov}/${x.c_total}`;
@@ -3562,10 +3599,12 @@ function renderRadarsBelowTable(projectId){
 
     // polígono: SOMENTE MUST
     const radar2Vals = [
-      clamp01(dom.ratio_m),
-      clamp01(eco.ratio_m),
-      clamp01(lin.ratio_m)
+      [ clamp01(dom.ratio_m), clamp01(eco.ratio_m), clamp01(lin.ratio_m) ], // MUST (área)
+      [ clamp01(dom.ratio_s), clamp01(eco.ratio_s), clamp01(lin.ratio_s) ], // SHOULD (linha cor)
+      [ clamp01(dom.ratio_c), clamp01(eco.ratio_c), clamp01(lin.ratio_c) ]  // COULD (linha cinza)
     ];
+
+
 
     // texto: M/S/C separado
     const radar2Txt = [
