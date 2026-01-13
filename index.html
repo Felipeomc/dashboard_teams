@@ -667,6 +667,19 @@
   margin-bottom:2px;
 }
 
+.mscLegendMini{display:flex;justify-content:center;gap:10px;margin-top:6px;font-size:11px;line-height:1}
+.mscLegendMini .it{display:inline-flex;align-items:center;gap:4px;color:#111827;font-weight:700}
+.mscLegendMini .sw{display:inline-block;width:16px;height:10px;border-radius:3px}
+
+/* M = área (preenchido translúcido + borda na cor do time) */
+.mscLegendMini .sw.m{background:var(--team);opacity:.22;border:1px solid var(--team)}
+
+/* S = linha contínua cor do time */
+.mscLegendMini .sw.s{background:transparent;border-top:2px solid var(--team)}
+
+/* C = linha contínua cinza */
+.mscLegendMini .sw.c{background:transparent;border-top:2px solid #9ca3af}
+
 
 </style>
 </head>
@@ -3625,6 +3638,7 @@ function renderRadarsBelowTable(projectId){
       <svg class="rad1" viewBox="0 0 220 220"></svg>
       <svg class="rad2" viewBox="0 0 220 220" style="margin-top:6px"></svg>
     `;
+    
     wrap.appendChild(div);
 
     // agora sim rad1 e rad2 existem
@@ -3633,7 +3647,14 @@ function renderRadarsBelowTable(projectId){
 
     drawRadar(rad1, radar1Vals, ["OSF","SLF","Pares"], color, radar1Txt);
     drawRadar(rad2, radar2Vals, ["DOM","ECO","LING"], color, radar2Txt);
-
+    div.insertAdjacentHTML(
+      "beforeend",
+      `<div class="mscLegendMini" style="--team:${color}">
+        <span class="it"><span class="sw m"></span><b>M</b></span>
+        <span class="it"><span class="sw s"></span><b>S</b></span>
+        <span class="it"><span class="sw c"></span><b>C</b></span>
+      </div>`
+    );
 
   });
 }
