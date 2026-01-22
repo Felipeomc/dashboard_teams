@@ -680,6 +680,72 @@
 /* C = linha contínua cinza */
 .mscLegendMini .sw.c{background:transparent;border-top:2px solid #9ca3af}
 
+/* ===== Destaques Expert × AE (retângulo) ===== */
+.mark{
+  display:inline-block;
+  padding:2px 10px;
+  border-radius:6px;
+  font-family:var(--mono);
+  font-weight:900;
+  border:1px solid transparent;
+  line-height:1.2;
+}
+
+/* verde (acertou best ou worst) */
+.mark.good{
+  background: rgba(31,157,85,.18);
+  border-color: rgba(31,157,85,.55);
+}
+
+/* amarelo (worst expert bateu no 2º pior AE) */
+.mark.warn{
+  background: rgba(245,158,11,.20);
+  border-color: rgba(245,158,11,.60);
+}
+
+/* opcional: destaque também na caixinha da barra do ranking */
+.vbarBox.goodMatch{
+  background: rgba(31,157,85,.10);
+  outline: 2px solid rgba(31,157,85,.40);
+}
+.vbarBox.warnMatch{
+  background: rgba(245,158,11,.10);
+  outline: 2px solid rgba(245,158,11,.40);
+}
+.mark{
+  display:inline-block;
+  padding:2px 6px;
+  border-radius:6px;
+  border:1px solid transparent;
+}
+
+.mark.good{
+  background:#c9f7cf;
+  border-color:#34c759;
+}
+
+.mark.warn{
+  background:#fff3b0;
+  border-color:#f2b01e;
+}
+
+.mark.alert{
+  background:#ffd7c2;   /* laranja claro (ou vermelho claro) */
+  border-color:#ff7a45;
+}
+
+.alertMatch{ outline:2px solid #ff7a45; background: rgba(255,122,69,0.10); }
+.mark {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.mark.good  { background: #dcfce7; border: 1px solid #22c55e; }
+.mark.warn  { background: #fef9c3; border: 1px solid #eab308; }
+.mark.alert { background: #ffedd5; border: 1px solid #fb923c; }
 
 </style>
 </head>
@@ -714,7 +780,7 @@
 
     <div class="stripCard" style="flex:2.6">
       <div class="stripTitle">
-        <span><b>Ranking (Sérgio)</b> × Ranking (Modelo)</span>
+        <span><b>Ranking (Sérgio)</b> × AE (Modelo)</span>
         <span class="mini" id="rankMeta"></span>
       </div>
       <div id="rankBoard" class="rankBoard"></div>
@@ -769,15 +835,15 @@
       </div>
       <div class="bd">
         <div class="howto">
-          <span></span> AE/AT/AC/Cobertura → <b>maior é melhor</b>. Ranking → <b>1 é melhor</b>.</span>
-          <span class="mini">   &nbsp;|&nbsp;   </span>
+          <!--<span></span> AE/AT/AC/Cobertura → <b>maior é melhor</b>. Ranking → <b>1 é melhor</b>.</span>-->
+          
           <span class="ico down">▼</span> VL/L
           <span class="ico mid">●</span> M
           <span class="ico up">▲</span> H/VH
           <span class="mini">   &nbsp;|&nbsp;   </span>
           <span class="howto">Acordo Expert × Modelo: </span>
           <span class="howto negrito" id="qaAgree">—</span>
-          <span class="mini">   &nbsp;|&nbsp;   </span>
+          
           
           
         </div>
@@ -811,8 +877,7 @@
               <tr>
                 <th>Equipe</th>
                 <th>Rank<br><span class="mini">Expert</span></th>
-                <th>Rank<br><span class="mini">Modelo</span></th>
-                <th>Δ Rank<br><span class="mini">Modelo−Expert</span></th>
+                
                 <th>Aptidão geral da equipe (AE)<br><span class="mini"> </span></th>
                 <th>Aptidão Técnica (AT)<br><span class="mini"> </span></th>
                 <th>Aptidão Colaborativa (AC)<br><span class="mini"> </span></th>
@@ -1766,6 +1831,96 @@ function pickFirst(){
   const t = (IDX.teamsByProject.get(p) || [])[0] ?? "";
   return {p, t};
 }
+// Retorna um mapa: { [teamId]: "good"|"warn"|"alert" }
+// Regras:
+// - destaca apenas 2 equipes por projeto: melhor do expert e pior do expert
+// - cor baseada na distância para o bloco esperado (top-K / bottom-K), onde K = tamanho do empate do expert
+function getHighlightTagsByTeam(projectId) {
+  const rows = projectRows(projectId);
+
+  // 1 linha por equipe
+  const byTeam = new Map();
+  for (const r of rows) {
+    const t = String(teamKey(r));
+    if (!byTeam.has(t)) byTeam.set(t, r);
+  }
+
+  const items = Array.from(byTeam, ([team, r]) => ({
+    team,
+    rex: metricRankExpert(r),
+    ae: metricAE(r),
+  }));
+
+  const withExpert = items.filter(x => Number.isFinite(x.rex) && x.rex > 0);
+  const withAE = items.filter(x => Number.isFinite(x.ae));
+
+  const tags = {};
+  if (!withExpert.length || !withAE.length) return tags;
+
+  // Grupo melhor/pior do Expert (com empates)
+  const bestR = Math.min(...withExpert.map(x => x.rex));
+  const worstR = Math.max(...withExpert.map(x => x.rex));
+  const bestGroup = withExpert.filter(x => x.rex === bestR);
+  const worstGroup = withExpert.filter(x => x.rex === worstR);
+
+  // Ordenação por AE (desc) para obter posição 1..N
+  const aeSorted = withAE.slice().sort((a, b) => {
+    if (b.ae !== a.ae) return b.ae - a.ae;
+    return String(a.team).localeCompare(String(b.team));
+  });
+
+  const N = aeSorted.length;
+  const aePos = new Map();
+  for (let i = 0; i < N; i++) aePos.set(aeSorted[i].team, i + 1);
+
+  // Escolher APENAS 1 equipe do grupo do melhor e 1 do grupo do pior (pra garantir 2 linhas no máximo)
+  // Melhor: pega a do grupo com MAIOR AE (se empatar, pelo nome)
+  const bestTeam = bestGroup
+    .slice()
+    .sort((a, b) => {
+      const aa = Number.isFinite(a.ae) ? a.ae : -Infinity;
+      const bb = Number.isFinite(b.ae) ? b.ae : -Infinity;
+      if (bb !== aa) return bb - aa;
+      return String(a.team).localeCompare(String(b.team));
+    })[0]?.team;
+
+  // Pior: pega a do grupo com MENOR AE (se empatar, pelo nome)
+  const worstTeam = worstGroup
+    .slice()
+    .sort((a, b) => {
+      const aa = Number.isFinite(a.ae) ? a.ae : Infinity;
+      const bb = Number.isFinite(b.ae) ? b.ae : Infinity;
+      if (aa !== bb) return aa - bb;
+      return String(a.team).localeCompare(String(b.team));
+    })[0]?.team;
+
+  const tagFromDist = (d) => {
+    if (d <= 0) return "good";   // verde
+    if (d === 1) return "warn";  // amarelo claro
+    return "alert";              // laranja (>=2)
+  };
+
+  // Distância para o bloco esperado:
+  // - Melhor: esperado estar no TOP-K (K = tamanho do empate do best do expert)
+  // - Pior: esperado estar no BOTTOM-K (K = tamanho do empate do worst do expert)
+  const Kbest = bestGroup.length;
+  const Kworst = worstGroup.length;
+
+  if (bestTeam && aePos.has(bestTeam)) {
+    const pos = aePos.get(bestTeam);         // 1..N
+    const dist = Math.max(0, pos - Kbest);   // fora do TOP-K
+    tags[bestTeam] = tagFromDist(dist);
+  }
+
+  if (worstTeam && aePos.has(worstTeam)) {
+    const pos = aePos.get(worstTeam);              // 1..N
+    const boundary = N - Kworst + 1;               // início do bloco dos Kworst piores
+    const dist = Math.max(0, boundary - pos);      // fora do BOTTOM-K
+    tags[worstTeam] = tagFromDist(dist);
+  }
+
+  return tags;
+}
 
 /* =======================
    Render helpers (SVG)
@@ -2242,6 +2397,145 @@ function uniq(arr){ return Array.from(new Set(arr)); }
 function teamKey(row){
   return row.team_id ?? row.team ?? row.teamId ?? "—";
 }
+
+function projectKey(row){
+  return String(row.projeto_id || row.project_id || row.project || "—");
+}
+
+function aeMeanFromRow(r){
+  // usa seu campo principal; mantém fallback caso você tenha variações
+  return safeParseFloat(r.ae_bn_mean ?? r.AE_cont ?? r.ae_mean ?? r.ae);
+}
+
+/**
+ * Regra:
+ * - Melhor expert: rank_expert == 1
+ * - Pior expert: maior rank_expert (pode ser 4º, 5º, etc)
+ * - Melhor AE: maior ae_mean
+ * - Pior AE: menor ae_mean
+ * - 2º pior AE: segundo menor ae_mean
+ */
+function getExpertAeMatches(projectId){
+  const pid = String(projectId ?? "");
+  const rows = (DATA || []).filter(r => projectKey(r) === pid);
+
+  // 1 linha por equipe (se tiver repetidas, pega a primeira)
+  const byTeam = new Map();
+  for (const r of rows){
+    const t = teamKey(r);
+    if (!byTeam.has(t)) byTeam.set(t, r);
+  }
+
+  const items = Array.from(byTeam, ([t, r]) => ({
+    t,
+    r,
+    re: safeParseFloat(r.rank_expert),
+    ae: aeMeanFromRow(r),
+  }));
+
+  const isCloseLocal = (a,b,eps=1e-12) =>
+  Number.isFinite(a) && Number.isFinite(b) && Math.abs(a-b) <= eps;
+
+  const withExpert = items.filter(x => Number.isFinite(x.re));
+  const bestR = withExpert.length ? Math.min(...withExpert.map(x => x.re)) : null;
+  const worstR = withExpert.length ? Math.max(...withExpert.map(x => x.re)) : null;
+
+  const bestExpertTeams  = (bestR  == null) ? [] : withExpert.filter(x => x.re === bestR).map(x => x.t);
+  const worstExpertTeams = (worstR == null) ? [] : withExpert.filter(x => x.re === worstR).map(x => x.t);
+
+  // ranking por AE (desc) com empate estilo "competição": 1,2,2,2,5
+  const withAe = items
+    .filter(x => Number.isFinite(x.ae))
+    .slice()
+    .sort((a,b) => {
+      if (b.ae !== a.ae) return b.ae - a.ae;
+      return String(a.t).localeCompare(String(b.t));
+    });
+
+  const aePosByTeam = {};
+  let pos = 0, i = 0, lastAE = null;
+
+  for (const it of withAe){
+    i += 1;
+    if (lastAE === null || !isCloseLocal(it.ae, lastAE)){
+      pos = i;
+      lastAE = it.ae;
+    }
+    aePosByTeam[it.t] = pos;
+  }
+
+  const bestAE  = withAe[0]?.t ?? null;
+  const worstAE = withAe.length ? withAe[withAe.length - 1].t : null;
+  const secondWorstAE = withAe.length >= 2 ? withAe[withAe.length - 2].t : null;
+
+  // tag por equipe: good (verde), warn (amarelo), alert (laranja/claro)
+  const tagByTeam = {};
+  const priority = { "":0, alert:1, warn:2, good:3 };
+  const putTag = (team, tag) => {
+    const cur = tagByTeam[team] || "";
+    if (priority[tag] > priority[cur]) tagByTeam[team] = tag;
+  };
+
+  const tagFromDist = (d) => {
+    if (d === 0) return "good";
+    if (d === 1) return "warn";
+    if (d === 2) return "alert";   // diferença de 2 posições
+    return "";                     // 3+ posições: sem destaque
+  };
+
+  // marca apenas as equipes Best(Expert) e Worst(Expert)
+  for (const t of bestExpertTeams){
+    const p = aePosByTeam[t];
+    if (!Number.isFinite(p) || bestR == null) continue;
+    putTag(t, tagFromDist(Math.abs(p - bestR)));
+  }
+  for (const t of worstExpertTeams){
+    const p = aePosByTeam[t];
+    if (!Number.isFinite(p) || worstR == null) continue;
+    putTag(t, tagFromDist(Math.abs(p - worstR)));
+  }
+
+  return {
+    tagByTeam,
+    items,
+    bestExpert: bestExpertTeams[0] ?? null,
+    worstExpert: worstExpertTeams[0] ?? null,
+    bestAE,
+    worstAE,
+    secondWorstAE,
+    worstExpertRank: worstR,
+    bestExpertRank: bestR,
+    aePosByTeam
+  };
+
+}
+
+/**
+ * Retorna:
+ * - "good"  => verde (best expert == best AE) OU (worst expert == worst AE)
+ * - "warn"  => amarelo (worst expert == 2º pior AE)
+ * - ""      => sem destaque
+ */
+function matchTagForTeam(teamId, m){
+  const t = String(teamId ?? "");
+  if (!m) return "";
+
+  const bestOK  = (t === m.bestExpert && t === m.bestAE);
+  const worstOK = (t === m.worstExpert && t === m.worstAE);
+  const nearOK  = (!worstOK && t === m.worstExpert && t === m.secondWorstAE);
+
+  if (bestOK || worstOK) return "good";
+  if (nearOK) return "warn";
+  return "";
+}
+
+function wrapMark(innerHtml, tag) {
+  if (tag !== "good" && tag !== "warn" && tag !== "alert") return innerHtml;
+  return `<span class="mark ${tag}">${innerHtml}</span>`;
+}
+
+
+
 function shortDevs(teamStr){
   const s = String(teamStr ?? "").replace(/[\[\]]/g,"").trim();
   if (!s) return "";
@@ -2371,92 +2665,94 @@ function renderProjectRankBoard(projectId, selectedRow){
     return;
   }
 
-  const rows = DATA.filter(r=>String(r.projeto_id||r.project_id||r.project||"")===String(projectId));
-  if (!rows.length){
+  const m = getExpertAeMatches(projectId);
+  if (!m.items.length){
     strip.style.display = "none";
     return;
   }
 
+  strip.style.display = "";
+  meta.textContent = `${m.items.length} equipes`;
+
   const selTeam = selectedRow ? teamKey(selectedRow) : "";
 
-  const maxRank = Math.max(
-    ...rows.map(r=>safeParseFloat(r.rank_expert)).filter(Number.isFinite),
-    ...rows.map(r=>safeParseFloat(r.rank_bn)).filter(Number.isFinite),
-    rows.length
-  ) || rows.length || 5;
+  // max rank (pior posição do expert)
+  const maxRank = (m.worstExpertRank != null) ? m.worstExpertRank : Math.max(5, m.items.length);
 
-  const ordered = rows.slice().sort((a,b)=>{
-    const ra = safeParseFloat(a.rank_bn), rb = safeParseFloat(b.rank_bn);
-    if (Number.isFinite(ra) && Number.isFinite(rb)) return ra-rb;
+  // ordena por ranking do expert (1 melhor), fallback por AE desc, fallback por id
+  const ordered = m.items.slice().sort((a,b)=>{
+    const ea = a.re, eb = b.re;
+    if (Number.isFinite(ea) && Number.isFinite(eb) && ea !== eb) return ea - eb;
+    if (Number.isFinite(ea) && !Number.isFinite(eb)) return -1;
+    if (!Number.isFinite(ea) && Number.isFinite(eb)) return 1;
 
-    const ea = safeParseFloat(a.rank_expert), eb = safeParseFloat(b.rank_expert);
-    if (Number.isFinite(ea) && Number.isFinite(eb)) return ea-eb;
-
-    return teamKey(a).localeCompare(teamKey(b));
+    const aa = a.ae, ab = b.ae;
+    if (Number.isFinite(aa) && Number.isFinite(ab) && aa !== ab) return ab - aa;
+    return String(a.t).localeCompare(String(b.t));
   });
-  
 
-  meta.textContent = `${rows.length} equipes`;
+  board.innerHTML = ordered.map(it=>{
+    const r = it.r;
+    const t = it.t;
 
-  board.innerHTML = ordered.map(r=>{
-    const t = teamKey(r);
     const devTitle = devTitleStr(r.team_str);
     const devCells = devCellsHtml(r.team_str);
 
-    const re = safeParseFloat(r.rank_expert);
-    const rb = safeParseFloat(r.rank_bn);
+    const re = it.re;
+    const ae = it.ae;
 
-    const he = Number.isFinite(re) ? Math.round(((maxRank - re + 1)/maxRank)*100) : 0;
-    const hb = Number.isFinite(rb) ? Math.round(((maxRank - rb + 1)/maxRank)*100) : 0;
+    // barra do expert (rank alto = barra menor)
+    const he = Number.isFinite(re) ? Math.round(((maxRank - re + 1) / maxRank) * 100) : 0;
 
-    const active = (t===selTeam) ? "active" : "";
+    // barra do AE (0..1 => %)
+    const hae = Number.isFinite(ae) ? Math.round(clamp(ae, 0, 1) * 100) : 0;
+
+    const active = (t === selTeam) ? "active" : "";
+
+    const tag = matchTagForTeam(t, m);
+    const boxCls = tag ? (tag === "good" ? "goodMatch" : (tag === "warn" ? "warnMatch" : "alertMatch")) : "";
+
 
     return `
       <div class="teamCol ${active}" data-team="${escapeHtml(t)}">
         <div class="teamName" title="${escapeHtml(t)}">${escapeHtml(t)}</div>
-        
+
         <div class="teamDevs" title="${escapeHtml(devTitle || "—")}">${devCells}</div>
 
         <div class="vbars">
-          <div class="vbarBox" title="Ranking do expert (1 = melhor)">
+          <div class="vbarBox ${boxCls}" title="Ranking do expert (1 = melhor)">
             <div class="vbar expert" style="height:${he}%"></div>
-            <div class="vnum">${escapeHtml(Number.isFinite(re) ? String(re) : "—")}</div>
+            <div class="vnum">${wrapMark(Number.isFinite(re) ? String(re) : "—", tag)}</div>
           </div>
-          <div class="vbarBox" title="Ranking da BN (1 = melhor)">
-            <div class="vbar" style="height:${hb}%"></div>
-            <div class="vnum">${escapeHtml(Number.isFinite(rb) ? String(rb) : "—")}</div>
+
+          <div class="vbarBox ${boxCls}" title="AE (média, maior = melhor)">
+            <div class="vbar" style="height:${hae}%"></div>
+            <div class="vnum">${wrapMark(Number.isFinite(ae) ? fmt(ae,2) : "—", tag)}</div>
           </div>
         </div>
 
-        <div class="vlab"><span>EXPERT</span><span>BN</span></div>
+        <div class="vlab">
+          <span>EXPERT</span>
+          <span>AE</span>
+        </div>
       </div>
     `;
   }).join("");
 
-  // Hover mostra a cobertura dessa equipe (sem perder o filtro)
-  // Click seleciona a equipe no select e atualiza o dashboard inteiro
-  const cols = board.querySelectorAll(".teamCol");
-  cols.forEach(col=>{
-    const teamId = col.getAttribute("data-team");
-    const r = ordered.find(x=>String(teamKey(x))===String(teamId));
-    if (!r) return;
-
-    col.addEventListener("mouseenter", ()=> renderCoveragePanel(r, teamId));
-    col.addEventListener("mouseleave", ()=> renderCoveragePanel(selectedRow, selTeam));
+  // clique para selecionar equipe
+  board.querySelectorAll(".teamCol").forEach(col=>{
     col.addEventListener("click", ()=>{
+      const tid = col.getAttribute("data-team");
+      if (!tid) return;
       const sel = $("teamSel");
       if (sel){
-        sel.value = teamId;
-        render();
+        sel.value = tid;
+        render(); // usa seu render principal existente
       }
     });
   });
-
-  // Cobertura inicial = equipe selecionada
-  renderCoveragePanel(selectedRow || ordered[0], selTeam || teamKey(ordered[0]));
-
-  strip.style.display = "flex";
 }
+
 
 function renderProjectStrip(projectId, row){
   if (!$("projectStrip")) return;
@@ -2496,9 +2792,48 @@ function metricAE(row){
 function metricRankExpert(row){
   return safeInt(row.rank_expert);
 }
-function metricRankModel(row){
-  return safeInt(row.rank_bn);
+// ==== Rank do MODELO agora = rank por AE mean (maior AE = rank 1) ====
+const AE_RANK_CACHE = new Map();
+
+function buildAERankMap(rows){
+  // Ordena por AE desc (maior é melhor)
+  const sorted = rows.slice().sort((a,b)=> (metricAE(b) - metricAE(a)));
+
+  // "competition rank" (tipo RANK.EQ): 1,1,3... quando há empate
+  const ranks = new Map();
+  let prevAE = null;
+  let prevRank = 0;
+  const EPS = 1e-12;
+
+  for(let i=0;i<sorted.length;i++){
+    const r = sorted[i];
+    const ae = metricAE(r);
+    let rank = i + 1;
+
+    if(prevAE !== null && Math.abs(ae - prevAE) <= EPS){
+      rank = prevRank; // empate
+    }else{
+      prevAE = ae;
+      prevRank = rank;
+    }
+    ranks.set(teamKey(r), rank);
+  }
+  return ranks;
 }
+
+function metricRankModel(row){
+  const pid = String(row.projeto_id||row.project_id||row.project||"");
+  if(!pid) return safeInt(row.rank_bn); // fallback
+
+  let map = AE_RANK_CACHE.get(pid);
+  if(!map){
+    const rows = projectRows(pid);
+    map = buildAERankMap(rows);
+    AE_RANK_CACHE.set(pid, map);
+  }
+  return map.get(teamKey(row)) || safeInt(row.rank_bn);
+}
+
 function metricCoveragePct(row){
   const totals = [
     safeInt(row.dominio_m_total), safeInt(row.dominio_s_total), safeInt(row.dominio_c_total),
@@ -2538,53 +2873,45 @@ function renderQuickAnswers(projectId){
   const bestAT = argmax(rows, r=>metricAT(r));
   const bestAC = argmax(rows, r=>metricAC(r));
 
-  // Acordo: quantos Δrank==0 e erro médio absoluto
-  const deltas = rows.map(r => metricRankModel(r) - metricRankExpert(r));
-  const matches = deltas.filter(d=>d===0).length;
-  const maeRank = deltas.reduce((a,b)=>a+Math.abs(b),0) / Math.max(1,deltas.length);
-  
-  // NOVO: match com diferença de até 1 posição (|Δrank| <= 1)
-  const matches_pm1 = deltas.filter(d => Math.abs(d) <= 1).length;
-
-  // NOVO: Top-1 (suporta empates no expert e/ou no modelo)
+    // === NOVO ACORDO: só BEST e WORST do expert vs rank por AE mean ===
   const expRanks = rows.map(r => metricRankExpert(r)).filter(v => v > 0);
-  const modRanks = rows.map(r => metricRankModel(r)).filter(v => v > 0);
-
   const expBest = expRanks.length ? Math.min(...expRanks) : 1;
-  const modBest = modRanks.length ? Math.min(...modRanks) : 1;
+  const expWorst = expRanks.length ? Math.max(...expRanks) : rows.length;
 
-  const expTop = new Set(rows.filter(r => metricRankExpert(r) === expBest).map(r => teamKey(r)));
-  const modTop = new Set(rows.filter(r => metricRankModel(r) === modBest).map(r => teamKey(r)));
+  const expBestRows = rows.filter(r => metricRankExpert(r) === expBest);
+  const expWorstRows = rows.filter(r => metricRankExpert(r) === expWorst);
 
-  const top1_hit = [...expTop].some(t => modTop.has(t));
+  const modelRanks = rows.map(r => metricRankModel(r)).filter(v => v > 0);
+  const modelBest = modelRanks.length ? Math.min(...modelRanks) : 1;
+  const modelWorst = modelRanks.length ? Math.max(...modelRanks) : rows.length;
 
-  // (extra útil p/ leitura) posição do melhor do expert no ranking do modelo
-  const best_pos = Math.min(...rows
-    .filter(r => metricRankExpert(r) === expBest)
-    .map(r => metricRankModel(r))
-    .filter(v => v > 0)
-  );
+  const best_hit  = expBestRows.some(r => metricRankModel(r) === modelBest);
+  const worst_hit = expWorstRows.some(r => metricRankModel(r) === modelWorst);
 
-  setText("qaSubtitle", `Projeto ${projectId} • 5 equipes`);
-  setText("qaBestAE", `${teamKey(bestAE)} (AE=${fmt(metricAE(bestAE), 6)})`);
-  setText("qaBestAENote", `Modelo escolheu esta como #1 (rank_bn=${metricRankModel(bestAE) || "—"})`);
+  const best_pos = Math.min(...expBestRows.map(r => metricRankModel(r)).filter(v => v > 0));
+  const worst_pos = Math.min(...expWorstRows.map(r => metricRankModel(r)).filter(v => v > 0));
 
-  setText("qaBestAT", `${teamKey(bestAT)} (AT=${fmt(metricAT(bestAT), 6)})`);
-  setText("qaBestATNote", `Maior aptidão técnica entre as 5 equipes`);
-
-  setText("qaBestAC", `${teamKey(bestAC)} (AC=${fmt(metricAC(bestAC), 6)})`);
-  setText("qaBestACNote", `Maior aptidão colaborativa entre as 5 equipes`);
-
-  const top1Txt = top1_hit ? "sim" : "não";
-  const bestPosTxt = Number.isFinite(best_pos) ? `${best_pos}º` : "—";
+  const bestTeamNames = expBestRows.map(r => teamKey(r)).join(", ");
+  const worstTeamNames = expWorstRows.map(r => teamKey(r)).join(", ");
 
   const NBSP = "\u00A0";
-  setText("qaAgree",
-    `${matches}/5 Matchs exatos.${NBSP}${NBSP}|${NBSP}${NBSP}Acertou o Top-1? ${top1Txt} (${bestPosTxt})${NBSP}${NBSP}|${NBSP}${NBSP}Erros de ±1 posição: ${matches_pm1}/5`
+  setText(
+    "qaAgree",
+    `Best(Expert): ${bestTeamNames} → posição por AE: ${best_pos}º (${best_hit ? "ok" : "não"})` +
+    `${NBSP}${NBSP}|${NBSP}${NBSP}` +
+    `Worst(Expert): ${worstTeamNames} → posição por AE: ${worst_pos}º (${worst_hit ? "ok" : "não"})`
   );
 
-  setText("qaAgreeNote", `Erro médio |Δrank| = ${maeRank.toFixed(2)} (0 é perfeito)`);
+  setText("qaAgreeNote", `Comparação feita por AE mean (ae_bn_mean), não por rank_bn.`);
+
 }
+function wrapMark(innerHtml, tag){
+  if(!tag) return innerHtml; // aceita good/warn/alert
+  return `<span class="mark ${tag}">${innerHtml}</span>`;
+}
+
+
+
 
 function renderTeamMatrix(projectId){
   const table = document.getElementById("teamMatrix");
@@ -2597,6 +2924,8 @@ function renderTeamMatrix(projectId){
     tbody.innerHTML = "";
     return;
   }
+  const matchByTeam = getHighlightTagsByTeam(projectId);
+
 
   // métricas para normalização (0..1)
   const vals = rows.map(r=>({
@@ -2607,7 +2936,7 @@ function renderTeamMatrix(projectId){
     ac: metricAC(r),
     cov: metricCoveragePct(r),
     rex: metricRankExpert(r),
-    rbn: metricRankModel(r),
+    //rbn: metricRankModel(r),
   }));
 
   const mm = (key)=>{
@@ -2632,11 +2961,23 @@ function renderTeamMatrix(projectId){
   ];
 
   // ordena pela posição do modelo (mais natural pra leitura do painel)
-  vals.sort((a,b)=> (a.rbn||999) - (b.rbn||999));
+  // ordena pelo Rank do Expert (e desempata por maior AE)
+  vals.sort((a,b)=>{
+    const ea = Number.isFinite(a.rex) ? a.rex : 999;
+    const eb = Number.isFinite(b.rex) ? b.rex : 999;
+    if(ea !== eb) return ea - eb;
+
+    const aa = Number.isFinite(a.ae) ? a.ae : -Infinity;
+    const ab = Number.isFinite(b.ae) ? b.ae : -Infinity;
+    if(aa !== ab) return ab - aa;
+
+    return String(a.team).localeCompare(String(b.team));
+  });
+
 
   tbody.innerHTML = vals.map(v=>{
-    const delta = (v.rbn||0) - (v.rex||0);
-    const deltaCls = delta===0 ? "ok" : "bad";
+    //const delta = (v.rbn||0) - (v.rex||0);
+    //const deltaCls = delta===0 ? "ok" : "bad";
 
     const nAE = norm(v.ae, mmAE.mn, mmAE.mx);
     const nAT = norm(v.at, mmAT.mn, mmAT.mx);
@@ -2660,11 +3001,18 @@ function renderTeamMatrix(projectId){
     return `
       <tr class="${trCls}" data-team="${escapeHtml(String(v.team))}">
         <td class="mono">${escapeHtml(String(v.team))}</td>
-        <td class="mono">${v.rex || "—"}</td>
-        <td class="mono">${v.rbn || "—"}</td>
-        <td class="mono"><span class="delta ${deltaCls}">${(delta===0)? "0" : (delta>0? ("+"+delta) : String(delta))}</span></td>
+        ${(()=>{
+          const tag = matchByTeam[String(v.team)] || "";
+          const reHtml = wrapMark(Number.isFinite(v.rex) ? String(v.rex) : "—", tag);
+          const aeHtml = wrapMark(fmtWithTrend(v.ae, 6), tag);
 
-        <td class="mono">${fmtWithTrend(v.ae, 6)}${bar(nAE, v.team===teamKey(currentRow()))}</td>
+          return `
+            <td class="mono">${reHtml}</td>
+
+            <td class="mono">${aeHtml}${bar(nAE, v.team===teamKey(currentRow()))}</td>
+          `;
+        })()}
+
         <td class="mono">${fmtWithTrend(v.at, 6)}${bar(nAT, v.team===teamKey(currentRow()))}</td>
         <td class="mono">${fmtWithTrend(v.ac, 6)}${bar(nAC, v.team===teamKey(currentRow()))}</td>
 
@@ -2869,7 +3217,7 @@ function loadFromText(text, name="(arquivo)"){
       AC_cont: r.AC_cont ?? r.ac_cont ?? r.AC ?? "",
       dist_AE: r.dist_AE ?? r.AE_dist ?? r.dist_ae ?? "",
     }));
-
+    AE_RANK_CACHE.clear();
     buildIndex();
 
     // selects
@@ -3541,6 +3889,7 @@ function renderRadarsBelowTable(projectId){
   wrap.innerHTML = "";
 
   const rows = DATA.filter(r => String(r.projeto_id||"") === String(projectId));
+  const m = getExpertAeMatches(projectId); // <-- AQUI
   if(!rows.length) return;
 
   // top 5 equipes (mesma lógica da sua ordenação)
