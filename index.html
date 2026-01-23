@@ -747,6 +747,46 @@
 .mark.warn  { background: #fef9c3; border: 1px solid #eab308; }
 .mark.alert { background: #ffedd5; border: 1px solid #fb923c; }
 
+#qaAgree { white-space: pre-line; }
+.techTargetsWrap{ overflow-x:auto; }
+.techTargetsTbl{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:12px;
+  color:#0b1220;
+}
+.techTargetsTbl th, .techTargetsTbl td{
+  padding:4px 8px;
+  vertical-align:top;
+  white-space:nowrap;
+}
+.techTargetsTbl thead th{
+  background:#f3f6fb;
+  color:#334155;
+  font-weight:800;
+  border-bottom:1px solid #e5e7eb;
+}
+.techTargetsTbl tbody th.rowlab{
+  color:#334155;
+  font-weight:900;
+  width:52px;
+}
+.techTargetsTbl td{
+  border-bottom:1px solid #eef2f7;
+}
+.techTargetsTbl .k{
+  display:inline-block;
+  width:16px;
+  text-align:center;
+  margin-right:4px;
+  font-weight:900;
+}
+.techTargetsTbl .more{
+  color:#64748b;
+  font-weight:800;
+}
+
 </style>
 </head>
 <body>
@@ -828,26 +868,21 @@
     <!-- V9: Respostas rápidas (história principal) -->
     <section class="card" id="qaCard">
       <div class="hd">
-        <strong>Desempenho por equipe</strong>
-        <span id="techTargetsText" class="mini" style="margin:-6px 0 6px 0;color:#9fb0c0"></span>
-        <span class="mini" id="qaSubtitle">—</span>
+        <span>Desempenho por equipe</span>
+        <div id="techTargetsText" class="mini techTargetsWrap" style="margin:-6px 0 6px 0;color:#9fb0c0"></div>
+
+
+        <span class="mini" id="qaSubtitle"></span>
         
       </div>
       <div class="bd">
         <div class="howto">
-          <!--<span></span> AE/AT/AC/Cobertura → <b>maior é melhor</b>. Ranking → <b>1 é melhor</b>.</span>-->
-          
-          <span class="ico down">▼</span> VL/L
-          <span class="ico mid">●</span> M
-          <span class="ico up">▲</span> H/VH
-          <span class="mini">   &nbsp;|&nbsp;   </span>
-          <span class="howto">Acordo Expert × Modelo: </span>
-          <span class="howto negrito" id="qaAgree">—</span>
           
           
-          
-        </div>
-
+          <span class="howto">  </span>
+          <span class="howto" id="qaAgree">—</span> </div>
+        
+        
         <!--<div class="qaRow">
           <div class="qaItem">
             <div class="qaQ">Melhor por AE (modelo)</div>
@@ -882,14 +917,18 @@
                 <th>Aptidão Técnica (AT)<br><span class="mini"> </span></th>
                 <th>Aptidão Colaborativa (AC)<br><span class="mini"> </span></th>
                 <th>Cobertura<br><span class="mini">% requisitos</span></th>
-                <th>Ponto forte</th>
-                <th>Ponto fraco</th>
+                
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
-
+        <div class="howto">
+          <span class="howto"> Ícone/faixa: </span>
+          <span class="ico down">▼</span> VL/L
+          <span class="ico mid">●</span> M
+          <span class="ico up">▲</span> H/VH
+        </div>
         <div class="hint" style="margin-top:10px"></div>
 
         <!-- ✅ NOVO: Radares sempre visíveis abaixo da tabela -->
@@ -2895,12 +2934,22 @@ function renderQuickAnswers(projectId){
   const worstTeamNames = expWorstRows.map(r => teamKey(r)).join(", ");
 
   const NBSP = "\u00A0";
-  setText(
-    "qaAgree",
-    `Best(Expert): ${bestTeamNames} → posição por AE: ${best_pos}º (${best_hit ? "ok" : "não"})` +
-    `${NBSP}${NBSP}|${NBSP}${NBSP}` +
-    `Worst(Expert): ${worstTeamNames} → posição por AE: ${worst_pos}º (${worst_hit ? "ok" : "não"})`
-  );
+  function setHTML(id, html){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = html;
+  }
+  const bestLine =
+  `<strong>Melhor:</strong> ${escapeHtml(bestTeamNames)} — ` +
+  `<strong>${expBest}º</strong> no Expert e <strong>${best_pos}º</strong> no AE — ` +
+  `<strong>${best_hit ? "✅ SIM" : "❌ NÃO"}</strong>`;
+
+  const worstLine =
+    `<strong>Pior:</strong> ${escapeHtml(worstTeamNames)} — ` +
+    `<strong>${expWorst}º</strong> no Expert e <strong>${worst_pos}º</strong> no AE — ` +
+    `<strong>${worst_hit ? "✅ SIM" : "❌ NÃO"}</strong>`;
+
+  setHTML("qaAgree", `${bestLine}<br>${worstLine}`);
 
   setText("qaAgreeNote", `Comparação feita por AE mean (ae_bn_mean), não por rank_bn.`);
 
@@ -2911,6 +2960,11 @@ function wrapMark(innerHtml, tag){
 }
 
 
+function fmtRankExpert(n){
+  const x = Number(n);
+  if (!Number.isFinite(x) || x <= 0) return "—";
+  return `${Math.trunc(x)}º`;
+}
 
 
 function renderTeamMatrix(projectId){
@@ -2953,12 +3007,13 @@ function renderTeamMatrix(projectId){
     return clamp((v-mn)/(mx-mn), 0, 1);
   }
 
+  // AE NÃO entra mais em "ponto forte/fraco"
   const metricDefs = [
-    {k:"ae", label:"AE"},
-    {k:"at", label:"AT"},
-    {k:"ac", label:"AC"},
+    {k:"at",  label:"AT"},
+    {k:"ac",  label:"AC"},
     {k:"cov", label:"Cobertura"},
   ];
+
 
   // ordena pela posição do modelo (mais natural pra leitura do painel)
   // ordena pelo Rank do Expert (e desempata por maior AE)
@@ -2979,23 +3034,22 @@ function renderTeamMatrix(projectId){
     //const delta = (v.rbn||0) - (v.rex||0);
     //const deltaCls = delta===0 ? "ok" : "bad";
 
-    const nAE = norm(v.ae, mmAE.mn, mmAE.mx);
-    const nAT = norm(v.at, mmAT.mn, mmAT.mx);
-    const nAC = norm(v.ac, mmAC.mn, mmAC.mx);
-    const nC  = norm(v.cov, mmC.mn, mmC.mx);
+    const nAE = clamp(v.ae, 0, 1);
+    const nAT = clamp(v.at, 0, 1);
+    const nAC = clamp(v.ac, 0, 1);
+    const nC  = clamp(v.cov, 0, 1);
 
-    const scores = {ae:nAE, at:nAT, ac:nAC, cov:nC};
-    let bestK = "ae", worstK = "ae", bestV = -1, worstV = 2;
-    for(const m of metricDefs){
-      const s = scores[m.k];
-      if(s>bestV){ bestV=s; bestK=m.k; }
-      if(s<worstV){ worstV=s; worstK=m.k; }
-    }
-    const bestLabel  = metricDefs.find(x=>x.k===bestK)?.label || bestK;
-    const worstLabel = metricDefs.find(x=>x.k===worstK)?.label || worstK;
+    
+
+    
 
     // mini bars (sutis)
-    const bar = (p, sel=false)=>`<div class="miniBar ${sel?"sel":""}"><span style="width:${Math.round(p*100)}%"></span></div>`;
+    const bar = (p, sel=false)=>{
+      const has = Number.isFinite(p);
+      const pct = has ? Math.round(clamp(p,0,1)*100) : 0;
+      const minPx = has ? 2 : 0; // mantém visível mesmo em 0%
+      return `<div class="miniBar ${sel?"sel":""}"><span style="width:${pct}%; min-width:${minPx}px"></span></div>`;
+    };
 
     const trCls = "clickRow";
     return `
@@ -3003,8 +3057,8 @@ function renderTeamMatrix(projectId){
         <td class="mono">${escapeHtml(String(v.team))}</td>
         ${(()=>{
           const tag = matchByTeam[String(v.team)] || "";
-          const reHtml = wrapMark(Number.isFinite(v.rex) ? String(v.rex) : "—", tag);
-          const aeHtml = wrapMark(fmtWithTrend(v.ae, 6), tag);
+          const reHtml = wrapMark(fmtRankExpert(v.rex), tag);
+          const aeHtml = wrapMark(fmtWithTrend(v.ae, 2), tag);
 
           return `
             <td class="mono">${reHtml}</td>
@@ -3013,13 +3067,12 @@ function renderTeamMatrix(projectId){
           `;
         })()}
 
-        <td class="mono">${fmtWithTrend(v.at, 6)}${bar(nAT, v.team===teamKey(currentRow()))}</td>
-        <td class="mono">${fmtWithTrend(v.ac, 6)}${bar(nAC, v.team===teamKey(currentRow()))}</td>
+        <td class="mono">${fmtWithTrend(v.at, 2)}${bar(nAT, v.team===teamKey(currentRow()))}</td>
+        <td class="mono">${fmtWithTrend(v.ac, 2)}${bar(nAC, v.team===teamKey(currentRow()))}</td>
 
         <td class="mono">${Math.round(v.cov*100)}%${bar(nC, v.team===teamKey(currentRow()))}</td>
 
-        <td><span class="badge good">${escapeHtml(bestLabel)}</span></td>
-        <td><span class="badge bad">${escapeHtml(worstLabel)}</span></td>
+        
       </tr>
     `;
   }).join("");
@@ -4180,17 +4233,46 @@ function renderProjectTechOcc(projectId, teams){
     });
   });
 
-  // texto “DOM M[...] S[...] C[...] | ECO ...”
+  // texto mais legível (3 linhas) + ícones Must/Should/Could
   if(txt){
-    const fmtList = (arr)=> (arr && arr.length) ? arr.join(", ") : "—";
-    const parts = dims.map(d=>{
-      const m = targetsByDim[d.prefix].m;
-      const s = targetsByDim[d.prefix].s;
-      const c = targetsByDim[d.prefix].c;
-      return `${d.label}  M[${fmtList(m)}]  S[${fmtList(s)}]  C[${fmtList(c)}]`;
-    });
-    txt.textContent = parts.join("   |   ");
+    const cellHtml = (arr, maxItems)=>{
+      const list = (arr || []).map(x=>String(x||"").trim()).filter(Boolean);
+      if(!list.length) return "—";
+
+      const shown = list.slice(0, maxItems).map(escapeHtml).join(", ");
+      const rest  = list.length - Math.min(maxItems, list.length);
+      const more  = rest > 0 ? ` <span class="more">+${rest}</span>` : "";
+
+      const full = escapeHtml(list.join(", "));
+      return `<span title="${full}">${shown}${more}</span>`;
+    };
+
+    const html = `
+      <table class="techTargetsTbl">
+        <thead>
+          <tr>
+            <th></th>
+            <th><span class="k">✓</span>Must</th>
+            <th><span class="k">➜</span>Should</th>
+            <th><span class="k">○</span>Could</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dims.map(d=>`
+            <tr>
+              <th class="rowlab">${escapeHtml(d.label)}</th>
+              <td>${cellHtml(targetsByDim[d.prefix].m, 6)}</td>
+              <td>${cellHtml(targetsByDim[d.prefix].s, 5)}</td>
+              <td>${cellHtml(targetsByDim[d.prefix].c, 4)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+    txt.innerHTML = html;
   }
+
+
 
   function normKey(x){ return String(x||"").trim().toLowerCase(); }
 
