@@ -1180,19 +1180,16 @@ const TOOLTIP_TEMPLATES = {
 }),
 
   TT_AE: () => ({
-    title: "AE — Team Fit",
-    lines: [
-      `Função: ${DEFAULT_MODEL.AE.func}`,
-      `Pesos: AT=${DEFAULT_MODEL.AE.weights.AT}, AC=${DEFAULT_MODEL.AE.weights.AC}`,
-      `σ_AE=${DEFAULT_MODEL.AE.sigma}`,
-
-      "Fórmula:",
-       `\\[ S = \\sum_{j=1}^{n} x_j \\]`,
-      `\\[ e_i = \\frac{w_i\\,x_i + (S - x_i)}{w_i + (n - 1)} \\]`,
-      `\\[ \\mathrm{WMIN}(x,w) = \\min_i e_i \\]`
-    ],
-    note: "Aqui, x_i são os valores contínuos de AT e AC (0–1)."
-  })
+  title: "AE — Team Fit",
+  lines: [
+    `Função: ${DEFAULT_MODEL.AE.func}`,
+    `Pesos: AT=${DEFAULT_MODEL.AE.weights.AT}, AC=${DEFAULT_MODEL.AE.weights.AC}`,
+    `σ_AE=${DEFAULT_MODEL.AE.sigma}`,
+    "Fórmula:",
+    `\\[ \\mathrm{MIXMINMAX}(x,w) = \\frac{w_1 \\cdot \\min(x) + w_2 \\cdot \\max(x)}{w_1 + w_2} \\]`
+  ],
+  note: "w₁ = peso do mínimo (AT), w₂ = peso do máximo (AC); x são os valores contínuos (0–1)."
+})
 };
 
 function tooltipHtml(t){
