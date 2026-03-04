@@ -1147,7 +1147,7 @@ const CENTROIDS = [
 const DEFAULT_MODEL = {
   AT: { func: "WMEAN", sigma: 0.05, weights: { Dom: 3, Eco: 1, Ling: 5 } },
   AC: { evidence: "pc_score" },
-  AE: { func: "WMIN",  sigma: 0.05, weights: { AT: 5, AC: 1 } }
+  AE: { func: "MIXMINMAX",  sigma: 0.05, weights: { AT: 5, AC: 1 } }
 };
 
 
